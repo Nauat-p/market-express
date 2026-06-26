@@ -4,13 +4,20 @@ import { Home, Search, ShoppingBag, Package, User } from "lucide-react";
 import { cartQuery } from "@/lib/queries";
 import type { ReactNode } from "react";
 
-const items = [
+type NavItem = {
+  to: "/home" | "/buscar" | "/carrinho" | "/pedidos" | "/perfil";
+  label: string;
+  icon: typeof Home;
+  badge?: boolean;
+};
+
+const items: NavItem[] = [
   { to: "/home", label: "Início", icon: Home },
   { to: "/buscar", label: "Buscar", icon: Search },
   { to: "/carrinho", label: "Carrinho", icon: ShoppingBag, badge: true },
   { to: "/pedidos", label: "Pedidos", icon: Package },
   { to: "/perfil", label: "Perfil", icon: User },
-] as const;
+];
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
