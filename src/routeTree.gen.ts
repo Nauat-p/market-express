@@ -9,38 +9,211 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedPerfilEditRouteImport } from './routes/_authenticated/perfil-edit'
+import { Route as AuthenticatedPerfilRouteImport } from './routes/_authenticated/perfil'
+import { Route as AuthenticatedPedidosRouteImport } from './routes/_authenticated/pedidos'
+import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
+import { Route as AuthenticatedEnderecosRouteImport } from './routes/_authenticated/enderecos'
+import { Route as AuthenticatedCheckoutRouteImport } from './routes/_authenticated/checkout'
+import { Route as AuthenticatedCarrinhoRouteImport } from './routes/_authenticated/carrinho'
+import { Route as AuthenticatedBuscarRouteImport } from './routes/_authenticated/buscar'
+import { Route as AuthenticatedProdutoSlugRouteImport } from './routes/_authenticated/produto.$slug'
+import { Route as AuthenticatedPedidoCodeRouteImport } from './routes/_authenticated/pedido.$code'
+import { Route as AuthenticatedCategoriaSlugRouteImport } from './routes/_authenticated/categoria.$slug'
 
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedPerfilEditRoute = AuthenticatedPerfilEditRouteImport.update({
+  id: '/perfil-edit',
+  path: '/perfil-edit',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPerfilRoute = AuthenticatedPerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPedidosRoute = AuthenticatedPedidosRouteImport.update({
+  id: '/pedidos',
+  path: '/pedidos',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedEnderecosRoute = AuthenticatedEnderecosRouteImport.update({
+  id: '/enderecos',
+  path: '/enderecos',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCheckoutRoute = AuthenticatedCheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCarrinhoRoute = AuthenticatedCarrinhoRouteImport.update({
+  id: '/carrinho',
+  path: '/carrinho',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedBuscarRoute = AuthenticatedBuscarRouteImport.update({
+  id: '/buscar',
+  path: '/buscar',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedProdutoSlugRoute =
+  AuthenticatedProdutoSlugRouteImport.update({
+    id: '/produto/$slug',
+    path: '/produto/$slug',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPedidoCodeRoute = AuthenticatedPedidoCodeRouteImport.update({
+  id: '/pedido/$code',
+  path: '/pedido/$code',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCategoriaSlugRoute =
+  AuthenticatedCategoriaSlugRouteImport.update({
+    id: '/categoria/$slug',
+    path: '/categoria/$slug',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/buscar': typeof AuthenticatedBuscarRoute
+  '/carrinho': typeof AuthenticatedCarrinhoRoute
+  '/checkout': typeof AuthenticatedCheckoutRoute
+  '/enderecos': typeof AuthenticatedEnderecosRoute
+  '/home': typeof AuthenticatedHomeRoute
+  '/pedidos': typeof AuthenticatedPedidosRoute
+  '/perfil': typeof AuthenticatedPerfilRoute
+  '/perfil-edit': typeof AuthenticatedPerfilEditRoute
+  '/categoria/$slug': typeof AuthenticatedCategoriaSlugRoute
+  '/pedido/$code': typeof AuthenticatedPedidoCodeRoute
+  '/produto/$slug': typeof AuthenticatedProdutoSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/buscar': typeof AuthenticatedBuscarRoute
+  '/carrinho': typeof AuthenticatedCarrinhoRoute
+  '/checkout': typeof AuthenticatedCheckoutRoute
+  '/enderecos': typeof AuthenticatedEnderecosRoute
+  '/home': typeof AuthenticatedHomeRoute
+  '/pedidos': typeof AuthenticatedPedidosRoute
+  '/perfil': typeof AuthenticatedPerfilRoute
+  '/perfil-edit': typeof AuthenticatedPerfilEditRoute
+  '/categoria/$slug': typeof AuthenticatedCategoriaSlugRoute
+  '/pedido/$code': typeof AuthenticatedPedidoCodeRoute
+  '/produto/$slug': typeof AuthenticatedProdutoSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/buscar': typeof AuthenticatedBuscarRoute
+  '/_authenticated/carrinho': typeof AuthenticatedCarrinhoRoute
+  '/_authenticated/checkout': typeof AuthenticatedCheckoutRoute
+  '/_authenticated/enderecos': typeof AuthenticatedEnderecosRoute
+  '/_authenticated/home': typeof AuthenticatedHomeRoute
+  '/_authenticated/pedidos': typeof AuthenticatedPedidosRoute
+  '/_authenticated/perfil': typeof AuthenticatedPerfilRoute
+  '/_authenticated/perfil-edit': typeof AuthenticatedPerfilEditRoute
+  '/_authenticated/categoria/$slug': typeof AuthenticatedCategoriaSlugRoute
+  '/_authenticated/pedido/$code': typeof AuthenticatedPedidoCodeRoute
+  '/_authenticated/produto/$slug': typeof AuthenticatedProdutoSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/buscar'
+    | '/carrinho'
+    | '/checkout'
+    | '/enderecos'
+    | '/home'
+    | '/pedidos'
+    | '/perfil'
+    | '/perfil-edit'
+    | '/categoria/$slug'
+    | '/pedido/$code'
+    | '/produto/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/buscar'
+    | '/carrinho'
+    | '/checkout'
+    | '/enderecos'
+    | '/home'
+    | '/pedidos'
+    | '/perfil'
+    | '/perfil-edit'
+    | '/categoria/$slug'
+    | '/pedido/$code'
+    | '/produto/$slug'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/buscar'
+    | '/_authenticated/carrinho'
+    | '/_authenticated/checkout'
+    | '/_authenticated/enderecos'
+    | '/_authenticated/home'
+    | '/_authenticated/pedidos'
+    | '/_authenticated/perfil'
+    | '/_authenticated/perfil-edit'
+    | '/_authenticated/categoria/$slug'
+    | '/_authenticated/pedido/$code'
+    | '/_authenticated/produto/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +221,122 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/perfil-edit': {
+      id: '/_authenticated/perfil-edit'
+      path: '/perfil-edit'
+      fullPath: '/perfil-edit'
+      preLoaderRoute: typeof AuthenticatedPerfilEditRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/perfil': {
+      id: '/_authenticated/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof AuthenticatedPerfilRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pedidos': {
+      id: '/_authenticated/pedidos'
+      path: '/pedidos'
+      fullPath: '/pedidos'
+      preLoaderRoute: typeof AuthenticatedPedidosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/home': {
+      id: '/_authenticated/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof AuthenticatedHomeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/enderecos': {
+      id: '/_authenticated/enderecos'
+      path: '/enderecos'
+      fullPath: '/enderecos'
+      preLoaderRoute: typeof AuthenticatedEnderecosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/checkout': {
+      id: '/_authenticated/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof AuthenticatedCheckoutRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/carrinho': {
+      id: '/_authenticated/carrinho'
+      path: '/carrinho'
+      fullPath: '/carrinho'
+      preLoaderRoute: typeof AuthenticatedCarrinhoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/buscar': {
+      id: '/_authenticated/buscar'
+      path: '/buscar'
+      fullPath: '/buscar'
+      preLoaderRoute: typeof AuthenticatedBuscarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/produto/$slug': {
+      id: '/_authenticated/produto/$slug'
+      path: '/produto/$slug'
+      fullPath: '/produto/$slug'
+      preLoaderRoute: typeof AuthenticatedProdutoSlugRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pedido/$code': {
+      id: '/_authenticated/pedido/$code'
+      path: '/pedido/$code'
+      fullPath: '/pedido/$code'
+      preLoaderRoute: typeof AuthenticatedPedidoCodeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/categoria/$slug': {
+      id: '/_authenticated/categoria/$slug'
+      path: '/categoria/$slug'
+      fullPath: '/categoria/$slug'
+      preLoaderRoute: typeof AuthenticatedCategoriaSlugRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedBuscarRoute: typeof AuthenticatedBuscarRoute
+  AuthenticatedCarrinhoRoute: typeof AuthenticatedCarrinhoRoute
+  AuthenticatedCheckoutRoute: typeof AuthenticatedCheckoutRoute
+  AuthenticatedEnderecosRoute: typeof AuthenticatedEnderecosRoute
+  AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
+  AuthenticatedPedidosRoute: typeof AuthenticatedPedidosRoute
+  AuthenticatedPerfilRoute: typeof AuthenticatedPerfilRoute
+  AuthenticatedPerfilEditRoute: typeof AuthenticatedPerfilEditRoute
+  AuthenticatedCategoriaSlugRoute: typeof AuthenticatedCategoriaSlugRoute
+  AuthenticatedPedidoCodeRoute: typeof AuthenticatedPedidoCodeRoute
+  AuthenticatedProdutoSlugRoute: typeof AuthenticatedProdutoSlugRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedBuscarRoute: AuthenticatedBuscarRoute,
+  AuthenticatedCarrinhoRoute: AuthenticatedCarrinhoRoute,
+  AuthenticatedCheckoutRoute: AuthenticatedCheckoutRoute,
+  AuthenticatedEnderecosRoute: AuthenticatedEnderecosRoute,
+  AuthenticatedHomeRoute: AuthenticatedHomeRoute,
+  AuthenticatedPedidosRoute: AuthenticatedPedidosRoute,
+  AuthenticatedPerfilRoute: AuthenticatedPerfilRoute,
+  AuthenticatedPerfilEditRoute: AuthenticatedPerfilEditRoute,
+  AuthenticatedCategoriaSlugRoute: AuthenticatedCategoriaSlugRoute,
+  AuthenticatedPedidoCodeRoute: AuthenticatedPedidoCodeRoute,
+  AuthenticatedProdutoSlugRoute: AuthenticatedProdutoSlugRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
