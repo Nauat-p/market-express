@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Search, MapPin, ChevronRight, Heart, ListSquare } from "lucide-react";
+import { Search, MapPin, ChevronRight, Heart, ClipboardList } from "lucide-react";
 import { profileQuery, addressesQuery } from "@/lib/queries";
 import { greetingPT } from "@/lib/format";
 import { useAuth } from "@/hooks/use-auth";
