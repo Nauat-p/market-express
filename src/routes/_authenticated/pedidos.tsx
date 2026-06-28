@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Package, ChevronRight } from "lucide-react";
 import { ordersQuery } from "@/lib/queries";
 import { formatBRL } from "@/lib/format";
+import { useAuth } from "@/hooks/use-auth";
+import { SignInRequired } from "@/components/sign-in-required";
 
 export const Route = createFileRoute("/_authenticated/pedidos")({
   ssr: false,
@@ -18,7 +20,25 @@ const statusLabel: Record<string, { label: string; color: string }> = {
 };
 
 function OrdersPage() {
-  const { data: orders = [], isLoading } = useQuery(ordersQuery);
+  const { user, loading } = useAuth();
+  const { data: orders = [], isLoading } = useQuery({
+    ...ordersQuery,
+    enabled: !!user,
+  });
+  return (
+    <div>
+      <header className="sticky top-0 z-20 glass px-4 pt-5 pb-3 border-b border-border/40 flex items-center gap-3">
+        <Link to="/home" className="size-10 grid place-items-center -ml-1">
+          <ArrowLeft className="size-5" />
+        </Link>
+        <h1 className="text-base font-semibold">Meus pedidos</h1>
+      </header>
+      {!loading && !user ? (
+        <SignInRequired
+          title="Entre para ver pedidos"
+          description="Seus pedidos ficam vinculados à sua conta."
+        />
+      ) : (
   return (
     <div>
       <header className="sticky top-0 z-20 glass px-4 pt-5 pb-3 border-b border-border/40 flex items-center gap-3">
