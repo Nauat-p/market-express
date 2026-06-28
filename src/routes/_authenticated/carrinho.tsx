@@ -53,6 +53,27 @@ function CartPage() {
         </div>
       ) : (
         <>
+          {deliveryFee > 0 && (
+            <div className="px-5 pt-4">
+              <div className="bg-primary-soft rounded-2xl px-4 py-3">
+                <p className="text-xs font-medium text-foreground mb-2">
+                  Faltam{" "}
+                  <span className="font-bold text-primary">
+                    {formatBRL(FREE_DELIVERY_OVER - subtotal)}
+                  </span>{" "}
+                  para frete grátis
+                </p>
+                <div className="h-1.5 rounded-full bg-background/60 overflow-hidden">
+                  <div
+                    className="h-full bg-primary rounded-full transition-all"
+                    style={{
+                      width: `${Math.min(100, (subtotal / FREE_DELIVERY_OVER) * 100)}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
           <main className="px-5 py-5 space-y-3">
             {cart.map((item) => {
               const price = item.product.sale_price ?? item.product.price;
