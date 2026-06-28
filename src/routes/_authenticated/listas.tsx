@@ -130,7 +130,7 @@ function ListsPage() {
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-foreground truncate">{list.name}</h3>
                   <p className="text-xs text-muted-foreground">
-                    {list.items_count} {list.items_count === 1 ? "item" : "itens"}
+                    {list.items.length} {list.items.length === 1 ? "item" : "itens"}
                   </p>
                 </div>
                 <ChevronRight className="size-5 text-muted-foreground/50" />
