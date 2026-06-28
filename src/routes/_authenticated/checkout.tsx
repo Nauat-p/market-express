@@ -8,6 +8,8 @@ import { cartQuery, addressesQuery, ordersQuery } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
 import { formatBRL } from "@/lib/format";
 import { useClearCart } from "@/hooks/use-cart";
+import { useFavorites } from "@/hooks/use-favorites";
+import { useShoppingLists } from "@/hooks/use-shopping-lists";
 import { useAuth } from "@/hooks/use-auth";
 import { SignInRequired } from "@/components/sign-in-required";
 
@@ -35,6 +37,8 @@ function CheckoutPage() {
   const { data: cart = [] } = useQuery(cartQuery);
   const { data: addresses = [] } = useQuery({ ...addressesQuery, enabled: !!user });
   const clearCart = useClearCart();
+  const { clearAll: clearFavorites } = useFavorites();
+  const { deleteList, lists } = useShoppingLists();
 
   const defaultAddr = addresses.find((a) => a.is_default) ?? addresses[0];
   const [addressId, setAddressId] = useState<string | undefined>(defaultAddr?.id);
@@ -132,6 +136,9 @@ function CheckoutPage() {
     onSuccess: (order) => {
       qc.invalidateQueries({ queryKey: ordersQuery.queryKey });
       qc.invalidateQueries({ queryKey: cartQuery.queryKey });
+      // Limpa favoritos e todas as listas após pedido confirmado
+      clearFavorites.mutate();
+      lists.forEach((list) => deleteList.mutate(list.id));
       toast.success("Pedido confirmado!");
       navigate({ to: "/pedido/$code", params: { code: order.code } });
     },
