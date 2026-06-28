@@ -120,7 +120,8 @@ function ListsPage() {
             {lists.map((list) => (
               <Link
                 key={list.id}
-                to="/home" // Placeholder para rota de detalhes da lista
+                to="/lista/$id"
+                params={{ id: list.id }}
                 className="flex items-center gap-4 bg-card ring-1 ring-border rounded-2xl p-4 active:scale-[0.99] transition-transform"
               >
                 <div className="size-12 rounded-xl bg-primary-soft text-primary grid place-items-center shrink-0">
