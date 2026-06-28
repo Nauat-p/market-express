@@ -46,6 +46,8 @@ function AuthPage() {
     if (initialMode) setMode(initialMode);
   }, [initialMode]);
 
+  const destination = safeRedirect(redirectTo);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -60,13 +62,15 @@ function AuthPage() {
           },
         });
         if (error) throw error;
+        await mergeLocalCartToDB();
         toast.success("Conta criada! Você já pode começar a comprar.");
-        navigate({ to: "/home" });
+        navigate({ to: destination as "/home" });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        await mergeLocalCartToDB();
         toast.success("Bem-vindo de volta!");
-        navigate({ to: "/home" });
+        navigate({ to: destination as "/home" });
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Algo deu errado";
@@ -95,7 +99,8 @@ function AuthPage() {
         return;
       }
       if (result.redirected) return;
-      navigate({ to: "/home" });
+      await mergeLocalCartToDB();
+      navigate({ to: destination as "/home" });
     } catch {
       toast.error("Não foi possível entrar com Google.");
       setGoogleLoading(false);
