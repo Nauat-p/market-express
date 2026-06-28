@@ -1,8 +1,8 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Home, Search, ShoppingBag, Package, User } from "lucide-react";
 import { cartQuery } from "@/lib/queries";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 
 type NavItem = {
   to: "/home" | "/buscar" | "/carrinho" | "/pedidos" | "/perfil";
@@ -20,6 +20,14 @@ const items: NavItem[] = [
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const qc = useQueryClient();
+  useEffect(() => {
+    const handler = () =>
+      qc.invalidateQueries({ queryKey: cartQuery.queryKey });
+    window.addEventListener("local-cart-changed", handler);
+    return () => window.removeEventListener("local-cart-changed", handler);
+  }, [qc]);
+
   return (
     <div className="min-h-dvh bg-background pb-24">
       {children}

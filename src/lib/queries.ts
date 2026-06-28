@@ -178,6 +178,36 @@ export const categoryBySlugQuery = (slug: string) =>
 export const cartQuery = queryOptions({
   queryKey: ["cart"],
   queryFn: async (): Promise<CartItem[]> => {
+    const { readLocalCart } = await import("@/lib/local-cart");
+    const { data: sess } = await supabase.auth.getSession();
+
+    if (!sess.session) {
+      const local = readLocalCart();
+      if (local.length === 0) return [];
+      const ids = local.map((i) => i.product_id);
+      const { data: prods, error } = await supabase
+        .from("products")
+        .select("*")
+        .in("id", ids);
+      if (error) throw error;
+      return local
+        .map((l) => {
+          const p = (prods ?? []).find((x) => x.id === l.product_id);
+          if (!p) return null;
+          return {
+            id: `local-${l.product_id}`,
+            product_id: l.product_id,
+            quantity: l.quantity,
+            product: {
+              ...p,
+              price: Number(p.price),
+              sale_price: p.sale_price !== null ? Number(p.sale_price) : null,
+            } as Product,
+          } satisfies CartItem;
+        })
+        .filter((x): x is CartItem => x !== null);
+    }
+
     const { data, error } = await supabase
       .from("cart_items")
       .select("id, product_id, quantity, product:products(*)")
