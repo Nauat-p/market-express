@@ -42,7 +42,7 @@ function BottomNav() {
   const cartCount = cart.reduce((sum, i) => sum + i.quantity, 0);
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-30 glass border-t border-border safe-bottom">
+    <nav className="fixed bottom-0 inset-x-0 z-30 bg-zinc-950 border-t border-zinc-800 safe-bottom">
       <ul className="max-w-md mx-auto px-4 pt-2 flex items-center justify-between">
         {items.map(({ to, label, icon: Icon, badge }) => {
           const active = pathname === to || (to === "/home" && pathname === "/");
