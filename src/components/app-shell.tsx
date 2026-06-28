@@ -51,7 +51,7 @@ function BottomNav() {
               <Link
                 to={to}
                 className={`relative flex flex-col items-center gap-0.5 px-3 py-1.5 transition-colors ${
-                  active ? "text-primary" : "text-muted-foreground"
+                active ? "text-white" : "text-white/60"
                 }`}
               >
                 <span className="relative">
