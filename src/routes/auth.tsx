@@ -6,11 +6,17 @@ import { Mail, Lock, Loader2, ShoppingBasket } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { mergeLocalCartToDB } from "@/hooks/use-cart";
 
 const searchSchema = z.object({
   redirect: z.string().optional(),
   mode: z.enum(["signin", "signup"]).optional(),
 });
+
+function safeRedirect(target?: string) {
+  if (target && target.startsWith("/") && !target.startsWith("//")) return target;
+  return "/home";
+}
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -18,9 +24,8 @@ export const Route = createFileRoute("/auth")({
   beforeLoad: async ({ search }) => {
     const { data } = await supabase.auth.getSession();
     if (data.session) {
-      const { redirect: r } = search;
       throw (await import("@tanstack/react-router")).redirect({
-        to: r && r.startsWith("/") ? (r as "/") : "/home",
+        to: safeRedirect(search.redirect) as "/home",
       });
     }
   },
@@ -28,7 +33,7 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
-  const { mode: initialMode } = useSearch({ from: "/auth" });
+  const { mode: initialMode, redirect: redirectTo } = useSearch({ from: "/auth" });
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">(initialMode ?? "signin");
   const [email, setEmail] = useState("");
