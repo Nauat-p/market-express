@@ -143,10 +143,15 @@ function RootComponent() {
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
-        if (event !== "SIGNED_OUT") {
-          queryClient.invalidateQueries();
-        }
+      if (event === "SIGNED_IN" || event === "USER_UPDATED") {
+        // Invalida apenas queries que dependem do usuário
+        queryClient.invalidateQueries({ queryKey: ["profile"] });
+        queryClient.invalidateQueries({ queryKey: ["cart"] });
+        queryClient.invalidateQueries({ queryKey: ["addresses"] });
+        queryClient.invalidateQueries({ queryKey: ["orders"] });
+      } else if (event === "SIGNED_OUT") {
+        // Limpa completamente o cache para segurança
+        queryClient.clear();
       }
     });
     return () => sub.subscription.unsubscribe();

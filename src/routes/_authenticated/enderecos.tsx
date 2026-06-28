@@ -13,11 +13,62 @@ export const Route = createFileRoute("/_authenticated/enderecos")({
   component: AddressesPage,
 });
 
+// Hook customizado para gerenciar mutações de endereço
+function useAddressMutations() {
+  const qc = useQueryClient();
+
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("addresses").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: addressesQuery.queryKey }),
+    onError: (e: Error) => toast.error(`Erro ao remover: ${e.message}`),
+  });
+
+  const setDefault = useMutation({
+    mutationFn: async (id: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
+      // Tenta usar RPC para atomicidade
+      const { error } = await supabase.rpc('set_default_address', {
+        p_user_id: user.id,
+        p_address_id: id
+      });
+
+      // Fallback manual se RPC não existir
+      if (error && error.code === 'PGRST501') {
+        // Desativa todos e ativa o novo
+        await supabase
+          .from("addresses")
+          .update({ is_default: false })
+          .eq("user_id", user.id);
+          
+        const { error: upErr } = await supabase
+          .from("addresses")
+          .update({ is_default: true })
+          .eq("id", id);
+        if (upErr) throw upErr;
+      } else if (error) {
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: addressesQuery.queryKey });
+      toast.success("Endereço padrão atualizado");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return { remove, setDefault };
+}
+
 function AddressesPage() {
   const { user, loading } = useAuth();
   const { data: addresses = [] } = useQuery({ ...addressesQuery, enabled: !!user });
   const [adding, setAdding] = useState(false);
-  const qc = useQueryClient();
+  const { remove, setDefault } = useAddressMutations();
 
   if (!loading && !user) {
     return (
@@ -35,31 +86,6 @@ function AddressesPage() {
       </div>
     );
   }
-
-  const remove = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("addresses").delete().eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: addressesQuery.queryKey }),
-  });
-
-  const setDefault = useMutation({
-    mutationFn: async (id: string) => {
-      const { data: auth } = await supabase.auth.getUser();
-      if (!auth.user) return;
-      await supabase
-        .from("addresses")
-        .update({ is_default: false })
-        .eq("user_id", auth.user.id);
-      const { error } = await supabase
-        .from("addresses")
-        .update({ is_default: true })
-        .eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: addressesQuery.queryKey }),
-  });
 
   return (
     <div className="pb-10">
@@ -79,7 +105,7 @@ function AddressesPage() {
       </header>
 
       <main className="px-5 py-5 space-y-3">
-        {adding && <AddressForm onDone={() => setAdding(false)} />}
+        {adding && <AddressForm onDone={() => setAdding(false)} isFirst={addresses.length === 0} />}
         {addresses.length === 0 && !adding && (
           <div className="text-center py-16">
             <div className="size-16 rounded-2xl bg-muted grid place-items-center mx-auto mb-4">
@@ -120,8 +146,9 @@ function AddressesPage() {
               <button
                 type="button"
                 onClick={() => remove.mutate(a.id)}
+                disabled={remove.isPending}
                 aria-label="Remover"
-                className="text-muted-foreground"
+                className="text-muted-foreground disabled:opacity-50"
               >
                 <Trash2 className="size-4" />
               </button>
@@ -130,7 +157,8 @@ function AddressesPage() {
               <button
                 type="button"
                 onClick={() => setDefault.mutate(a.id)}
-                className="mt-3 text-xs font-semibold text-primary"
+                disabled={setDefault.isPending}
+                className="mt-3 text-xs font-semibold text-primary disabled:opacity-50"
               >
                 Definir como padrão
               </button>
@@ -142,7 +170,7 @@ function AddressesPage() {
   );
 }
 
-function AddressForm({ onDone }: { onDone: () => void }) {
+function AddressForm({ onDone, isFirst }: { onDone: () => void; isFirst: boolean }) {
   const qc = useQueryClient();
   const [form, setForm] = useState<Omit<Address, "id" | "is_default">>({
     label: "Casa",
@@ -157,16 +185,13 @@ function AddressForm({ onDone }: { onDone: () => void }) {
 
   const create = useMutation({
     mutationFn: async () => {
-      const { data: auth } = await supabase.auth.getUser();
-      if (!auth.user) throw new Error("Sessão expirada");
-      const { data: existing } = await supabase
-        .from("addresses")
-        .select("id")
-        .limit(1);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Sessão expirada");
+      
       const { error } = await supabase.from("addresses").insert({
         ...form,
-        user_id: auth.user.id,
-        is_default: !existing || existing.length === 0,
+        user_id: user.id,
+        is_default: isFirst,
       });
       if (error) throw error;
     },

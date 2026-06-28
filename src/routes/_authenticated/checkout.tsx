@@ -36,23 +36,6 @@ function CheckoutPage() {
   const { data: addresses = [] } = useQuery({ ...addressesQuery, enabled: !!user });
   const clearCart = useClearCart();
 
-  if (!loading && !user) {
-    return (
-      <div>
-        <header className="sticky top-0 z-20 glass px-4 pt-5 pb-3 border-b border-border/40 flex items-center gap-3">
-          <Link to="/carrinho" className="size-10 grid place-items-center -ml-1">
-            <ArrowLeft className="size-5" />
-          </Link>
-          <h1 className="text-base font-semibold">Finalizar pedido</h1>
-        </header>
-        <SignInRequired
-          title="Entre para finalizar"
-          description="Crie sua conta em poucos segundos para concluir o pedido. Seu carrinho continua salvo."
-        />
-      </div>
-    );
-  }
-
   const defaultAddr = addresses.find((a) => a.is_default) ?? addresses[0];
   const [addressId, setAddressId] = useState<string | undefined>(defaultAddr?.id);
   const [payment, setPayment] = useState<PaymentMethod>("pix");
@@ -72,29 +55,13 @@ function CheckoutPage() {
       if (!selectedAddr) throw new Error("Adicione um endereço de entrega");
       if (cart.length === 0) throw new Error("Carrinho vazio");
 
-      const { data: auth } = await supabase.auth.getUser();
-      if (!auth.user) throw new Error("Sessão expirada");
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) throw new Error("Sessão expirada");
 
-      const { data: order, error } = await supabase
-        .from("orders")
-        .insert({
-          user_id: auth.user.id,
-          address_snapshot: selectedAddr,
-          subtotal,
-          delivery_fee: deliveryFee,
-          total,
-          payment_method: payment,
-          status: "received",
-          notes: notes || null,
-        })
-        .select()
-        .single();
-      if (error) throw error;
-
-      const items = cart.map((c) => {
+      // Prepara os itens para inserção
+      const orderItems = cart.map((c) => {
         const unit_price = c.product.sale_price ?? c.product.price;
         return {
-          order_id: order.id,
           product_id: c.product.id,
           name: c.product.name,
           brand: c.product.brand,
@@ -105,19 +72,91 @@ function CheckoutPage() {
           line_total: unit_price * c.quantity,
         };
       });
-      const { error: itemsErr } = await supabase.from("order_items").insert(items);
-      if (itemsErr) throw itemsErr;
 
-      await clearCart.mutateAsync();
+      // Tenta usar RPC para garantir atomicidade total (Pedido + Itens + Limpar Carrinho)
+      const { data: order, error } = await supabase.rpc('place_order_v1', {
+        p_user_id: authUser.id,
+        p_address_snapshot: selectedAddr,
+        p_subtotal: subtotal,
+        p_delivery_fee: deliveryFee,
+        p_total: total,
+        p_payment_method: payment,
+        p_notes: notes || null,
+        p_items: orderItems
+      });
+
+      // Fallback manual se RPC não existir
+      if (error && error.code === 'PGRST501') {
+        const { data: newOrder, error: orderErr } = await supabase
+          .from("orders")
+          .insert({
+            user_id: authUser.id,
+            address_snapshot: selectedAddr,
+            subtotal,
+            delivery_fee: deliveryFee,
+            total,
+            payment_method: payment,
+            status: "received",
+            notes: notes || null,
+          })
+          .select()
+          .single();
+        
+        if (orderErr) throw orderErr;
+
+        const itemsWithId = orderItems.map(item => ({
+          ...item,
+          order_id: newOrder.id
+        }));
+
+        const { error: itemsErr } = await supabase.from("order_items").insert(itemsWithId);
+        if (itemsErr) {
+          // Tenta remover o pedido órfão se os itens falharem
+          await supabase.from("orders").delete().eq("id", newOrder.id);
+          throw itemsErr;
+        }
+
+        await clearCart.mutateAsync();
+        return newOrder;
+      } else if (error) {
+        throw error;
+      }
+
+      // Se o RPC funcionou, ele já deve ter limpado o carrinho no banco
+      // Mas precisamos limpar o local se houver
+      const { clearLocal } = await import("@/lib/local-cart");
+      clearLocal();
+      
       return order;
     },
     onSuccess: (order) => {
       qc.invalidateQueries({ queryKey: ordersQuery.queryKey });
+      qc.invalidateQueries({ queryKey: cartQuery.queryKey });
       toast.success("Pedido confirmado!");
       navigate({ to: "/pedido/$code", params: { code: order.code } });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => {
+      console.error("Erro ao finalizar pedido:", e);
+      toast.error(e.message || "Erro ao processar o pedido. Tente novamente.");
+    },
   });
+
+  if (!loading && !user) {
+    return (
+      <div>
+        <header className="sticky top-0 z-20 glass px-4 pt-5 pb-3 border-b border-border/40 flex items-center gap-3">
+          <Link to="/carrinho" className="size-10 grid place-items-center -ml-1">
+            <ArrowLeft className="size-5" />
+          </Link>
+          <h1 className="text-base font-semibold">Finalizar pedido</h1>
+        </header>
+        <SignInRequired
+          title="Entre para finalizar"
+          description="Crie sua conta em poucos segundos para concluir o pedido. Seu carrinho continua salvo."
+        />
+      </div>
+    );
+  }
 
   if (cart.length === 0) {
     return (

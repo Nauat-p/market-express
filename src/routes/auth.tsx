@@ -53,21 +53,27 @@ function AuthPage() {
     setLoading(true);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
             data: { full_name: name },
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: window.location.origin + destination,
           },
         });
         if (error) throw error;
-        await mergeLocalCartToDB();
-        toast.success("Conta criada! Você já pode começar a comprar.");
+        
+        // Só tenta mesclar se a sessão for criada imediatamente (sem confirmação de email)
+        if (data.session) {
+          await mergeLocalCartToDB();
+        }
+        
+        toast.success("Conta criada! Verifique seu email se necessário.");
         navigate({ to: destination as "/home" });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        
         await mergeLocalCartToDB();
         toast.success("Bem-vindo de volta!");
         navigate({ to: destination as "/home" });
@@ -90,15 +96,23 @@ function AuthPage() {
   async function handleGoogle() {
     setGoogleLoading(true);
     try {
+      // Armazena o destino no localStorage para recuperar após o redirecionamento OAuth
+      if (redirectTo) {
+        localStorage.setItem("auth_redirect", redirectTo);
+      }
+
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+        redirect_uri: window.location.origin + "/auth", // Volta para a página de auth para processar
       });
+      
       if (result.error) {
         toast.error("Não foi possível entrar com Google.");
         setGoogleLoading(false);
         return;
       }
+      
       if (result.redirected) return;
+      
       await mergeLocalCartToDB();
       navigate({ to: destination as "/home" });
     } catch {
@@ -106,6 +120,22 @@ function AuthPage() {
       setGoogleLoading(false);
     }
   }
+
+  // Efeito para lidar com o retorno do OAuth e mesclagem do carrinho
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await mergeLocalCartToDB();
+        const storedRedirect = localStorage.getItem("auth_redirect");
+        if (storedRedirect) {
+          localStorage.removeItem("auth_redirect");
+          navigate({ to: safeRedirect(storedRedirect) as "/home" });
+        }
+      }
+    };
+    checkSession();
+  }, [navigate]);
 
   return (
     <div className="min-h-dvh bg-background flex flex-col">
