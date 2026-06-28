@@ -49,7 +49,7 @@ export function AppHeader({ showSearch = true }: { showSearch?: boolean }) {
                 <Heart className="size-4" />
               </Link>
               <Link to="/listas" className="size-10 rounded-xl bg-card ring-1 ring-border grid place-items-center text-muted-foreground">
-                <ListSquare className="size-4" />
+                <ClipboardList className="size-4" />
               </Link>
             </>
           )}
