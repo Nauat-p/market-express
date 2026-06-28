@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Search, MapPin, ChevronRight } from "lucide-react";
+import { Search, MapPin, ChevronRight, Heart, ListSquare } from "lucide-react";
 import { profileQuery, addressesQuery } from "@/lib/queries";
 import { greetingPT } from "@/lib/format";
 import { useAuth } from "@/hooks/use-auth";
@@ -20,7 +20,7 @@ export function AppHeader({ showSearch = true }: { showSearch?: boolean }) {
             <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">
               {greetingPT()}{name ? `, ${name}` : ""}
             </span>
-            <span className="flex items-center gap-1 text-sm font-semibold text-foreground max-w-[240px] truncate">
+            <span className="flex items-center gap-1 text-sm font-semibold text-foreground max-w-[200px] truncate">
               <MapPin className="size-3.5 text-primary shrink-0" />
               {def ? `${def.street}, ${def.number}` : "Adicionar endereço"}
               <ChevronRight className="size-3.5 text-muted-foreground shrink-0" />
@@ -41,16 +41,29 @@ export function AppHeader({ showSearch = true }: { showSearch?: boolean }) {
             </Link>
           </div>
         )}
-        <Link
-          to={user ? "/perfil" : "/auth"}
-          className="size-10 rounded-full bg-primary-soft text-primary grid place-items-center ring-1 ring-border overflow-hidden font-semibold text-sm"
-        >
-          {profile?.avatar_url ? (
-            <img src={profile.avatar_url} alt="" className="size-full object-cover" />
-          ) : (
-            (name?.[0] ?? "T").toUpperCase()
+        
+        <div className="flex items-center gap-2">
+          {user && (
+            <>
+              <Link to="/favoritos" className="size-10 rounded-xl bg-card ring-1 ring-border grid place-items-center text-muted-foreground relative">
+                <Heart className="size-4" />
+              </Link>
+              <Link to="/listas" className="size-10 rounded-xl bg-card ring-1 ring-border grid place-items-center text-muted-foreground">
+                <ListSquare className="size-4" />
+              </Link>
+            </>
           )}
-        </Link>
+          <Link
+            to={user ? "/perfil" : "/auth"}
+            className="size-10 rounded-full bg-primary-soft text-primary grid place-items-center ring-1 ring-border overflow-hidden font-semibold text-sm"
+          >
+            {profile?.avatar_url ? (
+              <img src={profile.avatar_url} alt="" className="size-full object-cover" />
+            ) : (
+              (name?.[0] ?? "T").toUpperCase()
+            )}
+          </Link>
+        </div>
       </div>
       {showSearch && (
         <Link

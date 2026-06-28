@@ -1,11 +1,13 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { ArrowLeft, Plus, Minus } from "lucide-react";
+import { ArrowLeft, Plus, Minus, Heart, Share2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { productBySlugQuery, cartQuery } from "@/lib/queries";
 import { formatBRL, calcDiscount } from "@/lib/format";
 import { useAddToCart, useUpdateCartQty } from "@/hooks/use-cart";
 import { useQuery } from "@tanstack/react-query";
+import { useFavorites } from "@/hooks/use-favorites";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/produto/$slug")({
   loader: async ({ context, params }) => {
@@ -32,19 +34,57 @@ function ProductPage() {
   const { data: cart = [] } = useQuery(cartQuery);
   const add = useAddToCart();
   const update = useUpdateCartQty();
+  const { isFavorite, toggle } = useFavorites();
 
   if (!product) return null;
 
   const inCart = cart.find((c) => c.product_id === product.id);
   const discount = calcDiscount(product.price, product.sale_price);
   const finalPrice = product.sale_price ?? product.price;
+  const isFav = isFavorite(product.id);
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    const shareData = {
+      title: product.name,
+      text: `Olha esse produto no Mercadinho Tauan: ${product.name}`,
+      url: url,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast.success("Link copiado!");
+      }
+    } catch (err) {
+      console.error("Erro ao compartilhar:", err);
+    }
+  };
 
   return (
     <div className="pb-24">
-      <header className="sticky top-0 z-20 glass px-4 pt-5 pb-3 flex items-center gap-3">
+      <header className="sticky top-0 z-20 glass px-4 pt-5 pb-3 flex items-center justify-between gap-3">
         <Link to="/home" className="size-10 grid place-items-center bg-card ring-1 ring-border rounded-full -ml-1">
           <ArrowLeft className="size-5" />
         </Link>
+        <div className="flex gap-2">
+          <button
+            onClick={handleShare}
+            className="size-10 grid place-items-center bg-card ring-1 ring-border rounded-full text-muted-foreground"
+          >
+            <Share2 className="size-4" />
+          </button>
+          <button
+            onClick={() => toggle.mutate(product.id)}
+            className={`size-10 grid place-items-center ring-1 rounded-full transition-colors ${
+              isFav ? "bg-primary text-primary-foreground ring-primary" : "bg-card text-muted-foreground ring-border"
+            }`}
+          >
+            <Heart className={`size-4 ${isFav ? "fill-current" : ""}`} />
+          </button>
+        </div>
       </header>
 
       <motion.div

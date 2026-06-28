@@ -1,10 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Plus, Minus, Heart } from "lucide-react";
+import { Plus, Minus, Heart, Share2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cartQuery, type Product } from "@/lib/queries";
 import { formatBRL, calcDiscount } from "@/lib/format";
 import { useAddToCart, useUpdateCartQty } from "@/hooks/use-cart";
+import { useFavorites } from "@/hooks/use-favorites";
+import { toast } from "sonner";
 
 type Variant = "carousel" | "grid";
 
@@ -13,16 +15,64 @@ export function ProductCard({ product, variant = "grid" }: { product: Product; v
   const inCart = cart.find((c) => c.product_id === product.id);
   const add = useAddToCart();
   const update = useUpdateCartQty();
+  const { isFavorite, toggle } = useFavorites();
+  
   const discount = calcDiscount(product.price, product.sale_price);
   const finalPrice = product.sale_price ?? product.price;
+  const isFav = isFavorite(product.id);
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const url = `${window.location.origin}/produto/${product.slug}`;
+    const shareData = {
+      title: product.name,
+      text: `Olha esse produto no Mercadinho Tauan: ${product.name}`,
+      url: url,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast.success("Link copiado!");
+      }
+    } catch (err) {
+      console.error("Erro ao compartilhar:", err);
+    }
+  };
+
+  const handleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggle.mutate(product.id);
+  };
 
   return (
     <motion.div
       whileTap={{ scale: 0.98 }}
-      className={`bg-card ring-1 ring-border rounded-3xl p-3 flex flex-col ${
+      className={`bg-card ring-1 ring-border rounded-3xl p-3 flex flex-col relative ${
         variant === "carousel" ? "w-40 shrink-0" : "w-full"
       }`}
     >
+      <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
+        <button
+          onClick={handleFavorite}
+          className={`size-8 rounded-full grid place-items-center shadow-sm transition-colors ${
+            isFav ? "bg-primary text-primary-foreground" : "bg-card/80 backdrop-blur-sm text-muted-foreground"
+          }`}
+        >
+          <Heart className={`size-4 ${isFav ? "fill-current" : ""}`} />
+        </button>
+        <button
+          onClick={handleShare}
+          className="size-8 rounded-full bg-card/80 backdrop-blur-sm text-muted-foreground grid place-items-center shadow-sm"
+        >
+          <Share2 className="size-4" />
+        </button>
+      </div>
+
       <Link
         to="/produto/$slug"
         params={{ slug: product.slug }}
@@ -128,6 +178,3 @@ export function ProductCardSkeleton({ variant = "grid" }: { variant?: Variant })
     </div>
   );
 }
-
-// Silence unused import (favorites coming soon)
-export const _heart = Heart;
