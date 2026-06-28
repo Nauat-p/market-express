@@ -5,6 +5,8 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { profileQuery } from "@/lib/queries";
+import { useAuth } from "@/hooks/use-auth";
+import { SignInRequired } from "@/components/sign-in-required";
 
 export const Route = createFileRoute("/_authenticated/perfil-edit")({
   ssr: false,
@@ -17,6 +19,21 @@ function ProfileEditPage() {
   const [phone, setPhone] = useState("");
   const qc = useQueryClient();
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
+
+  if (!loading && !user) {
+    return (
+      <div>
+        <header className="sticky top-0 z-20 glass px-4 pt-5 pb-3 border-b border-border/40 flex items-center gap-3">
+          <Link to="/home" className="size-10 grid place-items-center -ml-1">
+            <ArrowLeft className="size-5" />
+          </Link>
+          <h1 className="text-base font-semibold">Dados pessoais</h1>
+        </header>
+        <SignInRequired />
+      </div>
+    );
+  }
 
   useEffect(() => {
     if (profile) {

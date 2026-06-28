@@ -5,6 +5,8 @@ import { ArrowLeft, Plus, MapPin, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { addressesQuery, type Address } from "@/lib/queries";
+import { useAuth } from "@/hooks/use-auth";
+import { SignInRequired } from "@/components/sign-in-required";
 
 export const Route = createFileRoute("/_authenticated/enderecos")({
   ssr: false,
@@ -12,9 +14,27 @@ export const Route = createFileRoute("/_authenticated/enderecos")({
 });
 
 function AddressesPage() {
-  const { data: addresses = [] } = useQuery(addressesQuery);
+  const { user, loading } = useAuth();
+  const { data: addresses = [] } = useQuery({ ...addressesQuery, enabled: !!user });
   const [adding, setAdding] = useState(false);
   const qc = useQueryClient();
+
+  if (!loading && !user) {
+    return (
+      <div>
+        <header className="sticky top-0 z-20 glass px-4 pt-5 pb-3 border-b border-border/40 flex items-center gap-3">
+          <Link to="/home" className="size-10 grid place-items-center -ml-1">
+            <ArrowLeft className="size-5" />
+          </Link>
+          <h1 className="text-base font-semibold">Endereços</h1>
+        </header>
+        <SignInRequired
+          title="Entre para salvar endereços"
+          description="Você precisa de uma conta para guardar endereços de entrega."
+        />
+      </div>
+    );
+  }
 
   const remove = useMutation({
     mutationFn: async (id: string) => {

@@ -8,6 +8,8 @@ import { cartQuery, addressesQuery, ordersQuery } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
 import { formatBRL } from "@/lib/format";
 import { useClearCart } from "@/hooks/use-cart";
+import { useAuth } from "@/hooks/use-auth";
+import { SignInRequired } from "@/components/sign-in-required";
 
 export const Route = createFileRoute("/_authenticated/checkout")({
   ssr: false,
