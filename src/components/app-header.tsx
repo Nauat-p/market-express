@@ -13,7 +13,7 @@ export function AppHeader({ showSearch = true }: { showSearch?: boolean }) {
   const name = profile?.full_name?.split(" ")[0] ?? "";
 
   return (
-    <header className="sticky top-0 z-20 bg-background px-5 pt-5 pb-3 border-b border-border/40">
+    <header className="sticky top-0 z-20 bg-background px-5 pt-5 pb-3 border-b border-border/40 shadow-sm">
       <div className="flex items-center justify-between mb-3">
         {user ? (
           <Link to="/enderecos" className="flex flex-col items-start min-w-0">
