@@ -22,6 +22,7 @@ import { Route as AuthenticatedCarrinhoRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedBuscarRouteImport } from './routes/_authenticated/buscar'
 import { Route as AuthenticatedProdutoSlugRouteImport } from './routes/_authenticated/produto.$slug'
 import { Route as AuthenticatedPedidoCodeRouteImport } from './routes/_authenticated/pedido.$code'
+import { Route as AuthenticatedListaIdRouteImport } from './routes/_authenticated/lista.$id'
 import { Route as AuthenticatedCategoriaSlugRouteImport } from './routes/_authenticated/categoria.$slug'
 
 const AuthRoute = AuthRouteImport.update({
@@ -89,6 +90,11 @@ const AuthenticatedPedidoCodeRoute = AuthenticatedPedidoCodeRouteImport.update({
   path: '/pedido/$code',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedListaIdRoute = AuthenticatedListaIdRouteImport.update({
+  id: '/lista/$id',
+  path: '/lista/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCategoriaSlugRoute =
   AuthenticatedCategoriaSlugRouteImport.update({
     id: '/categoria/$slug',
@@ -108,6 +114,7 @@ export interface FileRoutesByFullPath {
   '/perfil': typeof AuthenticatedPerfilRoute
   '/perfil-edit': typeof AuthenticatedPerfilEditRoute
   '/categoria/$slug': typeof AuthenticatedCategoriaSlugRoute
+  '/lista/$id': typeof AuthenticatedListaIdRoute
   '/pedido/$code': typeof AuthenticatedPedidoCodeRoute
   '/produto/$slug': typeof AuthenticatedProdutoSlugRoute
 }
@@ -123,6 +130,7 @@ export interface FileRoutesByTo {
   '/perfil': typeof AuthenticatedPerfilRoute
   '/perfil-edit': typeof AuthenticatedPerfilEditRoute
   '/categoria/$slug': typeof AuthenticatedCategoriaSlugRoute
+  '/lista/$id': typeof AuthenticatedListaIdRoute
   '/pedido/$code': typeof AuthenticatedPedidoCodeRoute
   '/produto/$slug': typeof AuthenticatedProdutoSlugRoute
 }
@@ -140,6 +148,7 @@ export interface FileRoutesById {
   '/_authenticated/perfil': typeof AuthenticatedPerfilRoute
   '/_authenticated/perfil-edit': typeof AuthenticatedPerfilEditRoute
   '/_authenticated/categoria/$slug': typeof AuthenticatedCategoriaSlugRoute
+  '/_authenticated/lista/$id': typeof AuthenticatedListaIdRoute
   '/_authenticated/pedido/$code': typeof AuthenticatedPedidoCodeRoute
   '/_authenticated/produto/$slug': typeof AuthenticatedProdutoSlugRoute
 }
@@ -157,6 +166,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/perfil-edit'
     | '/categoria/$slug'
+    | '/lista/$id'
     | '/pedido/$code'
     | '/produto/$slug'
   fileRoutesByTo: FileRoutesByTo
@@ -172,6 +182,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/perfil-edit'
     | '/categoria/$slug'
+    | '/lista/$id'
     | '/pedido/$code'
     | '/produto/$slug'
   id:
@@ -188,6 +199,7 @@ export interface FileRouteTypes {
     | '/_authenticated/perfil'
     | '/_authenticated/perfil-edit'
     | '/_authenticated/categoria/$slug'
+    | '/_authenticated/lista/$id'
     | '/_authenticated/pedido/$code'
     | '/_authenticated/produto/$slug'
   fileRoutesById: FileRoutesById
@@ -291,6 +303,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPedidoCodeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/lista/$id': {
+      id: '/_authenticated/lista/$id'
+      path: '/lista/$id'
+      fullPath: '/lista/$id'
+      preLoaderRoute: typeof AuthenticatedListaIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/categoria/$slug': {
       id: '/_authenticated/categoria/$slug'
       path: '/categoria/$slug'
@@ -311,6 +330,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPerfilRoute: typeof AuthenticatedPerfilRoute
   AuthenticatedPerfilEditRoute: typeof AuthenticatedPerfilEditRoute
   AuthenticatedCategoriaSlugRoute: typeof AuthenticatedCategoriaSlugRoute
+  AuthenticatedListaIdRoute: typeof AuthenticatedListaIdRoute
   AuthenticatedPedidoCodeRoute: typeof AuthenticatedPedidoCodeRoute
   AuthenticatedProdutoSlugRoute: typeof AuthenticatedProdutoSlugRoute
 }
@@ -325,6 +345,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPerfilRoute: AuthenticatedPerfilRoute,
   AuthenticatedPerfilEditRoute: AuthenticatedPerfilEditRoute,
   AuthenticatedCategoriaSlugRoute: AuthenticatedCategoriaSlugRoute,
+  AuthenticatedListaIdRoute: AuthenticatedListaIdRoute,
   AuthenticatedPedidoCodeRoute: AuthenticatedPedidoCodeRoute,
   AuthenticatedProdutoSlugRoute: AuthenticatedProdutoSlugRoute,
 }
