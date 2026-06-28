@@ -12,7 +12,7 @@ export function useFavorites() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Entre para favoritar produtos");
 
-      const isFav = favorites.some(p => p.id === productId);
+      const isFav = favorites.some((p) => p.id === productId);
 
       if (isFav) {
         const { error } = await supabase
@@ -33,8 +33,29 @@ export function useFavorites() {
     },
     onError: (e: Error) => {
       toast.error(e.message);
-    }
+    },
   });
 
-  return { favorites, toggle, isFavorite: (id: string) => favorites.some(p => p.id === id) };
+  /** Remove todos os favoritos do usuário de uma vez. */
+  const clearAll = useMutation({
+    mutationFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { error } = await supabase
+        .from("favorites")
+        .delete()
+        .eq("user_id", user.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: favoritesQuery.queryKey });
+    },
+  });
+
+  return {
+    favorites,
+    toggle,
+    clearAll,
+    isFavorite: (id: string) => favorites.some((p) => p.id === id),
+  };
 }
