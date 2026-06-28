@@ -280,6 +280,65 @@ export const orderByCodeQuery = (code: string) =>
     },
   });
 
+export const favoritesQuery = queryOptions({
+  queryKey: ["favorites"],
+  queryFn: async (): Promise<Product[]> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+    const { data, error } = await supabase
+      .from("favorites")
+      .select("product:products(*)")
+      .eq("user_id", user.id);
+    if (error) throw error;
+    return (data ?? [])
+      .map((row) => row.product as Product | null)
+      .filter((p): p is Product => p !== null)
+      .map((p) => ({
+        ...p,
+        price: Number(p.price),
+        sale_price: p.sale_price !== null ? Number(p.sale_price) : null,
+      }));
+  },
+});
+
+export type ShoppingList = {
+  id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+  items: {
+    id: string;
+    product_id: string;
+    quantity: number;
+    product: Product;
+  }[];
+};
+
+export const shoppingListsQuery = queryOptions({
+  queryKey: ["shopping-lists"],
+  queryFn: async (): Promise<ShoppingList[]> => {
+    const { data, error } = await supabase
+      .from("shopping_lists")
+      .select("*, items:shopping_list_items(id, product_id, quantity, product:products(*))")
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return (data ?? []).map((list) => ({
+      ...list,
+      items: (list.items ?? []).map((item) => {
+        const p = item.product as Product;
+        return {
+          ...item,
+          product: {
+            ...p,
+            price: Number(p.price),
+            sale_price: p.sale_price !== null ? Number(p.sale_price) : null,
+          },
+        };
+      }),
+    })) as ShoppingList[];
+  },
+});
+
 export const searchProductsQuery = (term: string) =>
   queryOptions({
     queryKey: ["search", term],
