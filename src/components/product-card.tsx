@@ -20,6 +20,7 @@ export function ProductCard({ product, variant = "grid" }: { product: Product; v
   const discount = calcDiscount(product.price, product.sale_price);
   const finalPrice = product.sale_price ?? product.price;
   const isFav = isFavorite(product.id);
+  const outOfStock = product.stock <= 0;
 
   const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -83,10 +84,17 @@ export function ProductCard({ product, variant = "grid" }: { product: Product; v
             src={product.image_url}
             alt={product.name}
             loading="lazy"
-            className="w-full h-full object-cover"
+            className={`w-full h-full object-cover ${outOfStock ? "grayscale opacity-60" : ""}`}
           />
         ) : (
           <div className="w-full h-full grid place-items-center text-3xl">📦</div>
+        )}
+        {outOfStock && (
+          <div className="absolute inset-0 bg-black/40 grid place-items-center">
+            <span className="bg-white text-foreground text-[11px] font-bold px-3 py-1 rounded-full">
+              Esgotado
+            </span>
+          </div>
         )}
         {discount > 0 && (
           <span className="absolute top-2 left-2 bg-destructive text-destructive-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">
@@ -96,6 +104,11 @@ export function ProductCard({ product, variant = "grid" }: { product: Product; v
         {product.is_new && discount === 0 && (
           <span className="absolute top-2 left-2 bg-accent text-accent-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">
             NOVO
+          </span>
+        )}
+        {product.stock > 0 && product.stock < 5 && (
+          <span className="absolute bottom-2 left-2 bg-zinc-900/85 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
+            Últimas {product.stock} unid.
           </span>
         )}
       </Link>
@@ -112,14 +125,14 @@ export function ProductCard({ product, variant = "grid" }: { product: Product; v
       <div className="mt-2 flex items-end justify-between gap-2">
         <div className="flex flex-col leading-tight">
           {discount > 0 && (
-            <span className="text-[10px] text-muted-foreground line-through">
+            <span className="text-[10px] text-muted-foreground/70 line-through">
               {formatBRL(product.price)}
             </span>
           )}
-          <span className="text-sm font-semibold text-foreground">
+          <span className="text-base font-bold text-foreground tracking-tight">
             {formatBRL(finalPrice)}
             {product.unit && (
-              <span className="text-[10px] font-normal text-muted-foreground"> /{product.unit}</span>
+              <span className="text-[11px] font-medium text-muted-foreground"> /{product.unit}</span>
             )}
           </span>
         </div>
@@ -154,8 +167,12 @@ export function ProductCard({ product, variant = "grid" }: { product: Product; v
             type="button"
             aria-label="Adicionar ao carrinho"
             onClick={() => add.mutate({ product })}
-            disabled={add.isPending}
-            className="size-9 rounded-xl bg-primary text-primary-foreground grid place-items-center shadow-sm active:scale-95 transition-transform"
+            disabled={add.isPending || outOfStock}
+            className={`size-9 rounded-xl grid place-items-center shadow-sm active:scale-95 transition-transform ${
+              outOfStock
+                ? "bg-muted text-muted-foreground cursor-not-allowed"
+                : "bg-primary text-primary-foreground"
+            }`}
           >
             <Plus className="size-4" strokeWidth={2.75} />
           </button>
