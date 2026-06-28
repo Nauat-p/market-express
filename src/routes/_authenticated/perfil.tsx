@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { profileQuery, addressesQuery, ordersQuery } from "@/lib/queries";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/use-auth";
+import { SignInRequired } from "@/components/sign-in-required";
 
 export const Route = createFileRoute("/_authenticated/perfil")({
   ssr: false,
@@ -12,18 +14,37 @@ export const Route = createFileRoute("/_authenticated/perfil")({
 });
 
 function ProfilePage() {
+  const { user, loading } = useAuth();
   const { data: profile } = useQuery(profileQuery);
   const { data: addresses = [] } = useQuery(addressesQuery);
   const { data: orders = [] } = useQuery(ordersQuery);
   const navigate = useNavigate();
   const qc = useQueryClient();
 
+  if (loading) return null;
+  if (!user) {
+    return (
+      <div>
+        <header className="sticky top-0 z-20 glass px-4 pt-5 pb-3 border-b border-border/40 flex items-center gap-3">
+          <Link to="/home" className="size-10 grid place-items-center -ml-1">
+            <ArrowLeft className="size-5" />
+          </Link>
+          <h1 className="text-base font-semibold">Perfil</h1>
+        </header>
+        <SignInRequired
+          title="Crie seu perfil"
+          description="Entre para acompanhar pedidos, salvar endereços e finalizar suas compras."
+        />
+      </div>
+    );
+  }
+
   async function signOut() {
     await qc.cancelQueries();
     qc.clear();
     await supabase.auth.signOut();
     toast.success("Até logo!");
-    navigate({ to: "/auth", replace: true });
+    navigate({ to: "/home", replace: true });
   }
 
   return (
