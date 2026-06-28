@@ -66,5 +66,68 @@ export function useShoppingLists() {
     }
   });
 
-  return { lists, isLoading, createList, addItemToList, createFromCart };
+  const removeItem = useMutation({
+    mutationFn: async (itemId: string) => {
+      const { error } = await supabase
+        .from("shopping_list_items")
+        .delete()
+        .eq("id", itemId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: shoppingListsQuery.queryKey });
+    }
+  });
+
+  const updateItemQuantity = useMutation({
+    mutationFn: async ({ itemId, quantity }: { itemId: string, quantity: number }) => {
+      const { error } = await supabase
+        .from("shopping_list_items")
+        .update({ quantity })
+        .eq("id", itemId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: shoppingListsQuery.queryKey });
+    }
+  });
+
+  const deleteList = useMutation({
+    mutationFn: async (listId: string) => {
+      const { error } = await supabase
+        .from("shopping_lists")
+        .delete()
+        .eq("id", listId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: shoppingListsQuery.queryKey });
+      toast.success("Lista excluída");
+    }
+  });
+
+  const renameList = useMutation({
+    mutationFn: async ({ listId, name }: { listId: string, name: string }) => {
+      const { error } = await supabase
+        .from("shopping_lists")
+        .update({ name })
+        .eq("id", listId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: shoppingListsQuery.queryKey });
+    }
+  });
+
+  return {
+    lists,
+    isLoading,
+    createList,
+    addItemToList,
+    createFromCart,
+    removeItem,
+    updateItemQuantity,
+    deleteList,
+    renameList,
+  };
 }
