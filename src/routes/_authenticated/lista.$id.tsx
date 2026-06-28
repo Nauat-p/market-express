@@ -1,8 +1,10 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { useAddToCart } from "@/hooks/use-cart";
+import { useAddToCart, useUpdateCartQty } from "@/hooks/use-cart";
 import { ArrowLeft, ShoppingBag, Trash2, Plus, Minus, ShoppingCart } from "lucide-react";
 import { useShoppingLists } from "@/hooks/use-shopping-lists";
-
+import { useQuery } from "@tanstack/react-query";
+import { cartQuery } from "@/lib/queries";
+import { formatBRL } from "@/lib/format";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/lista/$id")({
@@ -13,7 +15,9 @@ export const Route = createFileRoute("/_authenticated/lista/$id")({
 function ListDetailPage() {
   const { id } = Route.useParams();
   const { lists, removeItem, updateItemQuantity, deleteList } = useShoppingLists();
+  const { data: cart = [] } = useQuery(cartQuery);
   const addItem = useAddToCart();
+  const updateCart = useUpdateCartQty();
   const router = useRouter();
 
   const list = lists.find((l) => l.id === id);
@@ -81,15 +85,18 @@ function ListDetailPage() {
             </p>
           </div>
         ) : (
-          <>
-            {list.items.map((item) => {
-              const p = item.product;
-              const price = p.sale_price ?? p.price;
-              return (
-                <div
-                  key={item.id}
-                  className="flex items-center gap-3 bg-card ring-1 ring-border rounded-2xl p-3"
-                >
+          list.items.map((item) => {
+            const p = item.product;
+            const price = p.sale_price ?? p.price;
+            const inCart = cart.find((c) => c.product_id === p.id);
+
+            return (
+              <div
+                key={item.id}
+                className="bg-card ring-1 ring-border rounded-2xl p-3 space-y-3"
+              >
+                {/* Linha superior: imagem + info + controles da lista */}
+                <div className="flex items-center gap-3">
                   {p.image_url ? (
                     <img
                       src={p.image_url}
@@ -99,20 +106,21 @@ function ListDetailPage() {
                   ) : (
                     <div className="size-14 rounded-xl bg-muted shrink-0" />
                   )}
+
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold truncate">{p.name}</p>
-                    <p className="text-xs text-primary font-bold">
-                      R$ {price.toFixed(2).replace(".", ",")}
-                    </p>
+                    <p className="text-xs text-primary font-bold">{formatBRL(price)}</p>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
+
+                  {/* Controles de quantidade da lista */}
+                  <div className="flex items-center gap-1.5 shrink-0">
                     <button
                       onClick={() =>
                         item.quantity > 1
                           ? updateItemQuantity.mutate({ itemId: item.id, quantity: item.quantity - 1 })
                           : removeItem.mutate(item.id)
                       }
-                      className="size-7 rounded-lg bg-muted grid place-items-center"
+                      className="size-7 rounded-lg bg-muted grid place-items-center text-muted-foreground active:scale-95"
                     >
                       <Minus className="size-3.5" />
                     </button>
@@ -121,15 +129,45 @@ function ListDetailPage() {
                       onClick={() =>
                         updateItemQuantity.mutate({ itemId: item.id, quantity: item.quantity + 1 })
                       }
-                      className="size-7 rounded-lg bg-muted grid place-items-center"
+                      className="size-7 rounded-lg bg-muted grid place-items-center text-muted-foreground active:scale-95"
                     >
                       <Plus className="size-3.5" />
                     </button>
                   </div>
                 </div>
-              );
-            })}
-          </>
+
+                {/* Linha inferior: botão de carrinho individual */}
+                {inCart ? (
+                  <div className="flex items-center gap-2 bg-primary-soft rounded-xl px-3 py-2">
+                    <button
+                      onClick={() => updateCart.mutate({ id: inCart.id, quantity: inCart.quantity - 1 })}
+                      className="size-6 rounded-lg grid place-items-center text-primary active:scale-95"
+                    >
+                      <Minus className="size-3.5" strokeWidth={2.5} />
+                    </button>
+                    <span className="text-xs font-bold text-primary flex-1 text-center">
+                      {inCart.quantity} no carrinho · {formatBRL(price * inCart.quantity)}
+                    </span>
+                    <button
+                      onClick={() => updateCart.mutate({ id: inCart.id, quantity: inCart.quantity + 1 })}
+                      className="size-6 rounded-lg grid place-items-center text-primary active:scale-95"
+                    >
+                      <Plus className="size-3.5" strokeWidth={2.5} />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => addItem.mutate({ product: p, quantity: item.quantity })}
+                    disabled={addItem.isPending}
+                    className="w-full flex items-center justify-center gap-2 bg-muted rounded-xl py-2 text-xs font-semibold text-foreground active:scale-[.98] transition-transform disabled:opacity-50"
+                  >
+                    <ShoppingCart className="size-3.5" />
+                    Adicionar ao carrinho
+                  </button>
+                )}
+              </div>
+            );
+          })
         )}
       </main>
 
