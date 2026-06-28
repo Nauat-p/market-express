@@ -110,6 +110,7 @@ function OrdersPage() {
           </ul>
         )}
       </main>
+      )}
     </div>
   );
 }
