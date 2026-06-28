@@ -31,9 +31,27 @@ const methods: { value: PaymentMethod; label: string; desc: string; icon: typeof
 function CheckoutPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const { user, loading } = useAuth();
   const { data: cart = [] } = useQuery(cartQuery);
-  const { data: addresses = [] } = useQuery(addressesQuery);
+  const { data: addresses = [] } = useQuery({ ...addressesQuery, enabled: !!user });
   const clearCart = useClearCart();
+
+  if (!loading && !user) {
+    return (
+      <div>
+        <header className="sticky top-0 z-20 glass px-4 pt-5 pb-3 border-b border-border/40 flex items-center gap-3">
+          <Link to="/carrinho" className="size-10 grid place-items-center -ml-1">
+            <ArrowLeft className="size-5" />
+          </Link>
+          <h1 className="text-base font-semibold">Finalizar pedido</h1>
+        </header>
+        <SignInRequired
+          title="Entre para finalizar"
+          description="Crie sua conta em poucos segundos para concluir o pedido. Seu carrinho continua salvo."
+        />
+      </div>
+    );
+  }
 
   const defaultAddr = addresses.find((a) => a.is_default) ?? addresses[0];
   const [addressId, setAddressId] = useState<string | undefined>(defaultAddr?.id);
