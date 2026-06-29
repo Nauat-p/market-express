@@ -95,7 +95,7 @@ function SearchPage() {
                     className="flex items-center gap-3 bg-card ring-1 ring-border rounded-2xl p-3"
                   >
                     <span
-                      className="size-10 rounded-xl grid place-items-center text-xl"
+                      className="size-10 rounded-full grid place-items-center text-xl ring-1 ring-border/50"
                       style={{ backgroundColor: c.bg_color ?? "var(--color-muted)" }}
                     >
                       {c.emoji}

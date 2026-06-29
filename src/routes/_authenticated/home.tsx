@@ -88,17 +88,19 @@ function PromoBanner() {
 function DeliveryBar() {
   return (
     <section className="px-5">
-      <div className="bg-primary-soft ring-1 ring-primary/10 rounded-2xl p-4 flex items-center gap-3">
-        <div className="size-10 rounded-full bg-primary/10 text-primary grid place-items-center">
-          <Truck className="size-5" strokeWidth={2} />
+      <div className="bg-card ring-1 ring-border shadow-card rounded-2xl p-3.5 flex items-center gap-3.5 transition-all active:scale-[0.99]">
+        <div className="size-11 rounded-full bg-primary/10 text-primary grid place-items-center shrink-0 shadow-inner">
+          <Truck className="size-5.5" strokeWidth={2.5} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-bold text-primary">Mercado mais próximo</p>
-          <p className="text-[11px] text-foreground/70 flex items-center gap-1.5">
-            <Clock className="size-3" /> 25-35 min · Frete grátis acima de R$ 50
+          <p className="text-[13px] font-bold text-foreground tracking-tight">Mercado mais próximo</p>
+          <p className="text-[11px] text-muted-foreground flex items-center gap-1.5 mt-0.5">
+            <Clock className="size-3 text-primary/70" /> 25-35 min · <span className="text-primary font-semibold">Frete grátis</span>
           </p>
         </div>
-        <ChevronRight className="size-4 text-muted-foreground" />
+        <div className="size-8 rounded-full bg-muted/50 grid place-items-center">
+          <ChevronRight className="size-4 text-muted-foreground" />
+        </div>
       </div>
     </section>
   );
