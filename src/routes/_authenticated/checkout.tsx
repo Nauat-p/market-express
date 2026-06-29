@@ -1,8 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { ArrowLeft, MapPin, CreditCard, Loader2, Banknote, Smartphone } from "lucide-react";
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { cartQuery, addressesQuery, ordersQuery } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +12,11 @@ import { useFavorites } from "@/hooks/use-favorites";
 import { useShoppingLists } from "@/hooks/use-shopping-lists";
 import { useAuth } from "@/hooks/use-auth";
 import { SignInRequired } from "@/components/sign-in-required";
+import { CheckoutProgress, type CheckoutStep } from "@/components/checkout-progress";
+import { AddressSelector } from "@/components/address-selector";
+import { PaymentSelector } from "@/components/payment-selector";
+import { OrderSummary } from "@/components/order-summary";
+import { FormField } from "@/components/form-field";
 
 export const Route = createFileRoute("/_authenticated/checkout")({
   ssr: false,
@@ -22,13 +27,7 @@ const FREE_DELIVERY_OVER = 50;
 const DELIVERY_FEE = 5.99;
 
 type PaymentMethod = "pix" | "credit" | "debit" | "cash";
-
-const methods: { value: PaymentMethod; label: string; desc: string; icon: typeof CreditCard }[] = [
-  { value: "pix", label: "PIX", desc: "Aprovação instantânea", icon: Smartphone },
-  { value: "credit", label: "Cartão de crédito", desc: "Maquininha na entrega", icon: CreditCard },
-  { value: "debit", label: "Cartão de débito", desc: "Maquininha na entrega", icon: CreditCard },
-  { value: "cash", label: "Dinheiro", desc: "Pague na entrega", icon: Banknote },
-];
+type CheckoutStepId = "address" | "payment" | "notes" | "confirm";
 
 function CheckoutPage() {
   const navigate = useNavigate();
@@ -40,13 +39,17 @@ function CheckoutPage() {
   const { clearAll: clearFavorites } = useFavorites();
   const { deleteList, lists } = useShoppingLists();
 
+  // Estados do checkout
   const defaultAddr = addresses.find((a) => a.is_default) ?? addresses[0];
+  const [currentStep, setCurrentStep] = useState<CheckoutStepId>("address");
   const [addressId, setAddressId] = useState<string | undefined>(defaultAddr?.id);
   const [payment, setPayment] = useState<PaymentMethod>("pix");
   const [notes, setNotes] = useState("");
+  const [changeAmount, setChangeAmount] = useState("");
 
   const selectedAddr = addresses.find((a) => a.id === addressId) ?? defaultAddr;
 
+  // Cálculos
   const subtotal = cart.reduce(
     (sum, i) => sum + (i.product.sale_price ?? i.product.price) * i.quantity,
     0
@@ -54,6 +57,64 @@ function CheckoutPage() {
   const deliveryFee = subtotal >= FREE_DELIVERY_OVER ? 0 : DELIVERY_FEE;
   const total = subtotal + deliveryFee;
 
+  // Etapas do checkout
+  const steps: CheckoutStep[] = [
+    {
+      id: "address",
+      label: "Endereço",
+      completed: !!addressId && !!selectedAddr,
+    },
+    {
+      id: "payment",
+      label: "Pagamento",
+      completed: !!payment && (payment !== "cash" || changeAmount),
+    },
+    {
+      id: "notes",
+      label: "Observações",
+      completed: true, // Sempre opcional
+    },
+    {
+      id: "confirm",
+      label: "Confirmação",
+      completed: false,
+    },
+  ];
+
+  // Validações por etapa
+  const isAddressValid = !!addressId && !!selectedAddr;
+  const isPaymentValid = payment && (payment !== "cash" || changeAmount);
+  const canProceed = {
+    address: isAddressValid,
+    payment: isPaymentValid,
+    notes: true,
+    confirm: true,
+  };
+
+  // Navegar entre etapas
+  const goToStep = (step: CheckoutStepId) => {
+    if (step === "address" || canProceed[step]) {
+      setCurrentStep(step);
+    }
+  };
+
+  const goToNextStep = () => {
+    const stepOrder: CheckoutStepId[] = ["address", "payment", "notes", "confirm"];
+    const currentIndex = stepOrder.indexOf(currentStep);
+    if (currentIndex < stepOrder.length - 1) {
+      setCurrentStep(stepOrder[currentIndex + 1]);
+    }
+  };
+
+  const goToPreviousStep = () => {
+    const stepOrder: CheckoutStepId[] = ["address", "payment", "notes", "confirm"];
+    const currentIndex = stepOrder.indexOf(currentStep);
+    if (currentIndex > 0) {
+      setCurrentStep(stepOrder[currentIndex - 1]);
+    }
+  };
+
+  // Mutation para confirmar pedido
   const placeOrder = useMutation({
     mutationFn: async () => {
       if (!selectedAddr) throw new Error("Adicione um endereço de entrega");
@@ -185,161 +246,175 @@ function CheckoutPage() {
         <h1 className="text-base font-semibold">Finalizar pedido</h1>
       </header>
 
-      <motion.main
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="px-5 py-5 space-y-6"
-      >
-        <section>
-          <SectionTitle>Endereço de entrega</SectionTitle>
-          {addresses.length === 0 ? (
-            <Link
-              to="/enderecos"
-              className="block bg-card ring-1 ring-dashed ring-border rounded-2xl p-4 text-center"
+      {/* Barra de progresso */}
+      <CheckoutProgress steps={steps} currentStep={currentStep} />
+
+      {/* Conteúdo das etapas */}
+      <motion.main className="px-5 py-5 space-y-6">
+        <AnimatePresence mode="wait">
+          {/* Etapa 1: Endereço */}
+          {currentStep === "address" && (
+            <motion.section
+              key="address"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
             >
-              <MapPin className="size-5 mx-auto text-muted-foreground mb-1" />
-              <p className="text-sm font-semibold">Adicionar endereço</p>
-            </Link>
-          ) : (
-            <div className="space-y-2">
-              {addresses.map((a) => (
-                <button
-                  type="button"
-                  key={a.id}
-                  onClick={() => setAddressId(a.id)}
-                  className={`w-full text-left bg-card rounded-2xl p-3 flex gap-3 ring-1 transition-colors ${
-                    a.id === addressId
-                      ? "ring-primary"
-                      : "ring-border"
-                  }`}
-                >
-                  <span
-                    className={`size-5 rounded-full mt-0.5 grid place-items-center shrink-0 ring-2 ${
-                      a.id === addressId
-                        ? "bg-primary ring-primary"
-                        : "bg-card ring-border"
-                    }`}
-                  >
-                    {a.id === addressId && (
-                      <span className="size-1.5 bg-primary-foreground rounded-full" />
-                    )}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold">{a.label}</p>
-                    <p className="text-xs text-muted-foreground leading-snug">
-                      {a.street}, {a.number}
-                      {a.complement ? ` · ${a.complement}` : ""}
-                      <br />
-                      {a.neighborhood} · {a.city}/{a.state}
-                    </p>
-                  </div>
-                </button>
-              ))}
-              <Link
-                to="/enderecos"
-                className="text-xs font-semibold text-primary block px-1 pt-1"
-              >
-                Adicionar novo endereço
-              </Link>
-            </div>
+              <h2 className="text-sm font-semibold mb-3 px-1">
+                Endereço de entrega
+              </h2>
+              <AddressSelector
+                addresses={addresses}
+                selectedId={addressId}
+                onSelect={setAddressId}
+              />
+            </motion.section>
           )}
-        </section>
 
-        <section>
-          <SectionTitle>Forma de pagamento</SectionTitle>
-          <div className="space-y-2">
-            {methods.map(({ value, label, desc, icon: Icon }) => (
-              <button
-                type="button"
-                key={value}
-                onClick={() => setPayment(value)}
-                className={`w-full text-left bg-card rounded-2xl p-3 flex items-center gap-3 ring-1 transition-colors ${
-                  payment === value ? "ring-primary" : "ring-border"
-                }`}
-              >
-                <span className="size-10 rounded-xl bg-muted grid place-items-center">
-                  <Icon className="size-5" />
-                </span>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold">{label}</p>
-                  <p className="text-[11px] text-muted-foreground">{desc}</p>
+          {/* Etapa 2: Pagamento */}
+          {currentStep === "payment" && (
+            <motion.section
+              key="payment"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <h2 className="text-sm font-semibold mb-3 px-1">
+                Forma de pagamento
+              </h2>
+              <PaymentSelector
+                selectedMethod={payment}
+                onSelectMethod={setPayment}
+                total={total}
+                changeAmount={changeAmount}
+                onChangeAmountChange={setChangeAmount}
+              />
+            </motion.section>
+          )}
+
+          {/* Etapa 3: Observações */}
+          {currentStep === "notes" && (
+            <motion.section
+              key="notes"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <h2 className="text-sm font-semibold mb-3 px-1">
+                Observações (opcional)
+              </h2>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={4}
+                placeholder="Ex: Sem cebola, troco pra R$ 100…"
+                className="w-full bg-card ring-1 ring-border rounded-2xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+              />
+            </motion.section>
+          )}
+
+          {/* Etapa 4: Confirmação */}
+          {currentStep === "confirm" && (
+            <motion.section
+              key="confirm"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-4"
+            >
+              <h2 className="text-sm font-semibold mb-3 px-1">
+                Resumo do pedido
+              </h2>
+
+              {/* Resumo do endereço */}
+              <div className="bg-card ring-1 ring-border rounded-2xl p-4">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                  Entrega em
+                </p>
+                <p className="text-sm font-semibold">{selectedAddr?.label}</p>
+                <p className="text-xs text-muted-foreground leading-snug mt-1">
+                  {selectedAddr?.street}, {selectedAddr?.number}
+                  {selectedAddr?.complement ? ` · ${selectedAddr.complement}` : ""}
+                  <br />
+                  {selectedAddr?.neighborhood} · {selectedAddr?.city}/{selectedAddr?.state}
+                </p>
+              </div>
+
+              {/* Resumo do pagamento */}
+              <div className="bg-card ring-1 ring-border rounded-2xl p-4">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                  Forma de pagamento
+                </p>
+                <p className="text-sm font-semibold capitalize">
+                  {payment === "pix" && "PIX"}
+                  {payment === "credit" && "Cartão de crédito"}
+                  {payment === "debit" && "Cartão de débito"}
+                  {payment === "cash" && "Dinheiro"}
+                </p>
+              </div>
+
+              {/* Resumo de observações */}
+              {notes && (
+                <div className="bg-card ring-1 ring-border rounded-2xl p-4">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                    Observações
+                  </p>
+                  <p className="text-sm text-foreground">{notes}</p>
                 </div>
-                <span
-                  className={`size-5 rounded-full grid place-items-center ring-2 ${
-                    payment === value
-                      ? "bg-primary ring-primary"
-                      : "bg-card ring-border"
-                  }`}
-                >
-                  {payment === value && (
-                    <span className="size-1.5 bg-primary-foreground rounded-full" />
-                  )}
-                </span>
-              </button>
-            ))}
-          </div>
-        </section>
+              )}
+            </motion.section>
+          )}
+        </AnimatePresence>
 
-        <section>
-          <SectionTitle>Observações (opcional)</SectionTitle>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={3}
-            placeholder="Ex: Sem cebola, troco pra R$ 100…"
-            className="w-full bg-card ring-1 ring-border rounded-2xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
-          />
-        </section>
-
-        <section className="bg-card ring-1 ring-border rounded-2xl p-4 space-y-2">
-          <Row label="Subtotal" value={formatBRL(subtotal)} />
-          <Row
-            label="Entrega"
-            value={
-              deliveryFee === 0 ? (
-                <span className="text-primary font-semibold">Grátis</span>
-              ) : (
-                formatBRL(deliveryFee)
-              )
-            }
-          />
-          <div className="h-px bg-border my-2" />
-          <Row
-            label={<span className="font-semibold text-foreground">Total</span>}
-            value={
-              <span className="text-lg font-bold text-foreground">
-                {formatBRL(total)}
-              </span>
-            }
-          />
-        </section>
+        {/* Resumo do pedido (sempre visível) */}
+        <OrderSummary
+          subtotal={subtotal}
+          deliveryFee={deliveryFee}
+          total={total}
+        />
       </motion.main>
 
+      {/* Botões de navegação */}
       <div className="fixed bottom-0 inset-x-0 z-40 glass border-t border-border safe-bottom px-5 pt-3 pb-3">
-        <div className="max-w-md mx-auto">
-          <button
-            type="button"
-            disabled={placeOrder.isPending || !addressId}
-            onClick={() => placeOrder.mutate()}
-            className="w-full bg-primary text-primary-foreground rounded-2xl py-4 text-sm font-semibold flex items-center justify-center gap-2 active:scale-[.98] transition-transform disabled:opacity-60"
-          >
-            {placeOrder.isPending && <Loader2 className="size-4 animate-spin" />}
-            Confirmar pedido · {formatBRL(total)}
-          </button>
+        <div className="max-w-md mx-auto space-y-2">
+          <div className="flex gap-2">
+            {currentStep !== "address" && (
+              <button
+                type="button"
+                onClick={goToPreviousStep}
+                className="flex-1 bg-muted text-foreground rounded-2xl py-3 text-sm font-semibold active:scale-[.98] transition-transform"
+              >
+                Voltar
+              </button>
+            )}
+
+            {currentStep !== "confirm" ? (
+              <button
+                type="button"
+                disabled={!canProceed[currentStep]}
+                onClick={goToNextStep}
+                className="flex-1 bg-primary text-primary-foreground rounded-2xl py-3 text-sm font-semibold active:scale-[.98] transition-transform disabled:opacity-60"
+              >
+                Próximo
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled={placeOrder.isPending || !isPaymentValid}
+                onClick={() => placeOrder.mutate()}
+                className="flex-1 bg-primary text-primary-foreground rounded-2xl py-3 text-sm font-semibold flex items-center justify-center gap-2 active:scale-[.98] transition-transform disabled:opacity-60"
+              >
+                {placeOrder.isPending && <Loader2 className="size-4 animate-spin" />}
+                Confirmar · {formatBRL(total)}
+              </button>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <h2 className="text-sm font-semibold mb-2 px-1">{children}</h2>;
-}
-function Row({ label, value }: { label: React.ReactNode; value: React.ReactNode }) {
-  return (
-    <div className="flex items-center justify-between text-sm">
-      <span className="text-muted-foreground">{label}</span>
-      <span>{value}</span>
     </div>
   );
 }

@@ -7,6 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { addressesQuery, type Address } from "@/lib/queries";
 import { useAuth } from "@/hooks/use-auth";
 import { SignInRequired } from "@/components/sign-in-required";
+import { FormField } from "@/components/form-field";
+import { maskCEP, isValidCEP } from "@/lib/masks";
 
 export const Route = createFileRoute("/_authenticated/enderecos")({
   ssr: false,
@@ -211,49 +213,55 @@ function AddressForm({ onDone, isFirst }: { onDone: () => void; isFirst: boolean
       }}
       className="bg-card ring-1 ring-border rounded-2xl p-4 space-y-3"
     >
-      <Field
+      <FormField
         label="Apelido"
         value={form.label}
         onChange={(v) => setForm({ ...form, label: v })}
         placeholder="Casa, Trabalho…"
       />
       <div className="grid grid-cols-[1fr_100px] gap-3">
-        <Field
+        <FormField
           label="Rua"
           value={form.street}
           onChange={(v) => setForm({ ...form, street: v })}
           required
         />
-        <Field
+        <FormField
           label="Número"
           value={form.number}
           onChange={(v) => setForm({ ...form, number: v })}
           required
         />
       </div>
-      <Field
+      <FormField
         label="Complemento"
         value={form.complement ?? ""}
         onChange={(v) => setForm({ ...form, complement: v })}
         placeholder="Apto, bloco…"
       />
-      <Field
+      <FormField
         label="Bairro"
         value={form.neighborhood}
         onChange={(v) => setForm({ ...form, neighborhood: v })}
         required
       />
       <div className="grid grid-cols-2 gap-3">
-        <Field
+        <FormField
           label="Cidade"
           value={form.city}
           onChange={(v) => setForm({ ...form, city: v })}
           required
         />
-        <Field
+        <FormField
           label="CEP"
           value={form.zip}
           onChange={(v) => setForm({ ...form, zip: v })}
+          mask={maskCEP}
+          validate={(value) => {
+            if (!value) return { valid: false, error: "CEP obrigatório" };
+            if (!isValidCEP(value)) return { valid: false, error: "CEP inválido" };
+            return { valid: true };
+          }}
           required
         />
       </div>
@@ -278,32 +286,4 @@ function AddressForm({ onDone, isFirst }: { onDone: () => void; isFirst: boolean
   );
 }
 
-function Field({
-  label,
-  value,
-  onChange,
-  required,
-  placeholder,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  required?: boolean;
-  placeholder?: string;
-}) {
-  return (
-    <label className="block">
-      <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-        {label}
-      </span>
-      <input
-        type="text"
-        required={required}
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="mt-1 w-full bg-muted/60 ring-1 ring-border rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-      />
-    </label>
-  );
-}
+
