@@ -43,7 +43,7 @@ function BottomNav() {
   const cartCount = cart.reduce((sum, i) => sum + i.quantity, 0);
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-40 glass border-t border-border/40 safe-bottom px-2 pt-1.5">
+    <nav className="fixed bottom-0 inset-x-0 z-40 bg-zinc-950 border-t border-zinc-800 safe-bottom px-2 pt-1.5">
       <ul className="max-w-md mx-auto flex items-center justify-around">
         {items.map(({ to, label, icon: Icon, badge }) => {
           const active = pathname === to || (to === "/home" && pathname === "/");
@@ -52,7 +52,7 @@ function BottomNav() {
               <Link
                 to={to}
                 className={`relative flex flex-col items-center gap-1 py-2 transition-all active:scale-90 group ${
-                  active ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                  active ? "text-primary" : "text-zinc-400 hover:text-zinc-100"
                 }`}
               >
                 <div className={`relative transition-transform ${active ? "scale-110" : ""}`}>
