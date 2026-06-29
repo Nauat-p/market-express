@@ -18,7 +18,7 @@ export function CategoriesStrip() {
             className="flex flex-col items-center gap-2 shrink-0 w-16"
           >
             <div
-              className="size-16 rounded-2xl grid place-items-center text-2xl ring-1 ring-border transition-transform active:scale-95"
+              className="size-16 rounded-full grid place-items-center text-2xl ring-1 ring-border shadow-sm transition-all hover:ring-primary/30 active:scale-95"
               style={{ backgroundColor: c.bg_color ?? "var(--color-muted)" }}
             >
               {c.emoji}

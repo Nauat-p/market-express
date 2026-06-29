@@ -42,20 +42,20 @@ export function AppHeader({ showSearch = true }: { showSearch?: boolean }) {
           </div>
         )}
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           {user && (
             <>
-              <Link to="/favoritos" className="size-10 rounded-xl bg-card ring-1 ring-border grid place-items-center text-muted-foreground relative">
+              <Link to="/favoritos" className="size-9 rounded-full bg-card ring-1 ring-border grid place-items-center text-muted-foreground hover:text-primary transition-colors shadow-sm active:scale-90">
                 <Heart className="size-4" />
               </Link>
-              <Link to="/listas" className="size-10 rounded-xl bg-card ring-1 ring-border grid place-items-center text-muted-foreground">
+              <Link to="/listas" className="size-9 rounded-full bg-card ring-1 ring-border grid place-items-center text-muted-foreground hover:text-primary transition-colors shadow-sm active:scale-90">
                 <ClipboardList className="size-4" />
               </Link>
             </>
           )}
           <Link
             to={user ? "/perfil" : "/auth"}
-            className="size-10 rounded-full bg-primary-soft text-primary grid place-items-center ring-1 ring-border overflow-hidden font-semibold text-sm"
+            className="size-10 rounded-full bg-primary-soft text-primary grid place-items-center ring-2 ring-primary/20 overflow-hidden font-semibold text-sm shadow-sm active:scale-95 transition-transform"
           >
             {profile?.avatar_url ? (
               <img src={profile.avatar_url} alt="" className="size-full object-cover" />

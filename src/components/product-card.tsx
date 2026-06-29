@@ -42,19 +42,19 @@ export function ProductCard({ product, variant = "grid" }: { product: Product; v
         {/* Save button */}
         <button
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSheetOpen(true); }}
-          className={`absolute top-4 right-4 z-10 size-8 rounded-full grid place-items-center shadow-sm transition-colors ${
+          className={`absolute top-2 right-2 z-10 size-7 rounded-full grid place-items-center shadow-sm transition-all active:scale-90 ${
             isSaved
               ? "bg-primary text-primary-foreground"
-              : "bg-card/80 backdrop-blur-sm text-muted-foreground"
+              : "bg-card/90 backdrop-blur-sm text-muted-foreground hover:text-primary"
           }`}
         >
-          <Bookmark className={`size-4 ${isSaved ? "fill-current" : ""}`} />
+          <Bookmark className={`size-3.5 ${isSaved ? "fill-current" : ""}`} />
         </button>
 
         <Link
           to="/produto/$slug"
           params={{ slug: product.slug }}
-          className="block relative aspect-square rounded-2xl overflow-hidden bg-muted mb-3"
+          className="block relative aspect-square rounded-2xl overflow-hidden bg-muted/30 mb-2.5 group"
         >
           {product.image_url ? (
             <img
@@ -74,12 +74,12 @@ export function ProductCard({ product, variant = "grid" }: { product: Product; v
             </div>
           )}
           {discount > 0 && (
-            <span className="absolute top-2 left-2 bg-destructive text-destructive-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">
+            <span className="absolute top-2 left-2 bg-destructive text-destructive-foreground text-[9px] font-bold px-1.5 py-0.5 rounded-md shadow-sm">
               -{discount}%
             </span>
           )}
           {product.is_new && discount === 0 && (
-            <span className="absolute top-2 left-2 bg-accent text-accent-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">
+            <span className="absolute top-2 left-2 bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.5 rounded-md shadow-sm">
               NOVO
             </span>
           )}
@@ -90,13 +90,13 @@ export function ProductCard({ product, variant = "grid" }: { product: Product; v
           )}
         </Link>
 
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 px-0.5">
           {product.brand && (
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">
+            <p className="text-[9px] uppercase tracking-widest text-muted-foreground/80 font-bold truncate mb-0.5">
               {product.brand}
             </p>
           )}
-          <p className="text-sm font-medium text-foreground line-clamp-2 leading-tight mb-1">
+          <p className="text-[13px] font-semibold text-foreground line-clamp-2 leading-snug mb-1 group-hover:text-primary transition-colors">
             {product.name}
           </p>
         </div>
@@ -117,25 +117,25 @@ export function ProductCard({ product, variant = "grid" }: { product: Product; v
           </div>
 
           {inCart ? (
-            <div className="flex items-center gap-1.5 bg-primary-soft rounded-xl px-1 py-1">
+            <div className="flex items-center gap-1 bg-primary-soft rounded-xl p-0.5 ring-1 ring-primary/10">
               <button
                 type="button"
                 aria-label="Diminuir"
                 onClick={() => update.mutate({ id: inCart.id, quantity: inCart.quantity - 1 })}
-                className="size-6 rounded-lg grid place-items-center text-primary active:scale-95"
+                className="size-7 rounded-lg grid place-items-center text-primary hover:bg-primary/10 active:scale-90 transition-all"
               >
-                <Minus className="size-3.5" strokeWidth={2.5} />
+                <Minus className="size-3" strokeWidth={3} />
               </button>
-              <span className="text-xs font-bold text-primary min-w-[1ch] text-center">
+              <span className="text-xs font-bold text-primary min-w-[2ch] text-center">
                 {inCart.quantity}
               </span>
               <button
                 type="button"
                 aria-label="Aumentar"
                 onClick={() => update.mutate({ id: inCart.id, quantity: inCart.quantity + 1 })}
-                className="size-6 rounded-lg grid place-items-center text-primary active:scale-95"
+                className="size-7 rounded-lg grid place-items-center text-primary hover:bg-primary/10 active:scale-90 transition-all"
               >
-                <Plus className="size-3.5" strokeWidth={2.5} />
+                <Plus className="size-3" strokeWidth={3} />
               </button>
             </div>
           ) : (
@@ -144,13 +144,13 @@ export function ProductCard({ product, variant = "grid" }: { product: Product; v
               aria-label="Adicionar ao carrinho"
               onClick={() => add.mutate({ product })}
               disabled={add.isPending || outOfStock}
-              className={`size-9 rounded-xl grid place-items-center shadow-sm active:scale-95 transition-transform ${
+              className={`size-8 rounded-full grid place-items-center shadow-sm active:scale-90 transition-all ${
                 outOfStock
                   ? "bg-muted text-muted-foreground cursor-not-allowed"
-                  : "bg-primary text-primary-foreground"
+                  : "bg-primary text-primary-foreground hover:shadow-md hover:bg-primary/90"
               }`}
             >
-              <Plus className="size-4" strokeWidth={2.75} />
+              <Plus className="size-4" strokeWidth={3} />
             </button>
           )}
         </div>

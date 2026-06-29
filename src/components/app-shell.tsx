@@ -42,30 +42,38 @@ function BottomNav() {
   const cartCount = cart.reduce((sum, i) => sum + i.quantity, 0);
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-30 bg-zinc-950 border-t border-zinc-800 safe-bottom">
-      <ul className="max-w-md mx-auto px-4 pt-2 flex items-center justify-between">
+    <nav className="fixed bottom-0 inset-x-0 z-40 glass border-t border-border/40 safe-bottom px-2 pt-1.5">
+      <ul className="max-w-md mx-auto flex items-center justify-around">
         {items.map(({ to, label, icon: Icon, badge }) => {
           const active = pathname === to || (to === "/home" && pathname === "/");
           return (
-            <li key={to}>
+            <li key={to} className="flex-1">
               <Link
                 to={to}
-                className={`relative flex flex-col items-center gap-0.5 px-3 py-1.5 transition-colors ${
-                active ? "text-white" : "text-white/60"
+                className={`relative flex flex-col items-center gap-1 py-2 transition-all active:scale-90 group ${
+                  active ? "text-primary" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <span className="relative">
+                <div className={`relative transition-transform ${active ? "scale-110" : ""}`}>
                   <Icon
                     className="size-[22px]"
-                    strokeWidth={active ? 2.4 : 1.8}
+                    strokeWidth={active ? 2.5 : 2}
                   />
                   {badge && cartCount > 0 && (
-                    <span className="absolute -top-1.5 -right-2 size-[18px] bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full grid place-items-center ring-2 ring-background">
+                    <span className="absolute -top-1.5 -right-2 size-4.5 bg-primary text-primary-foreground text-[9px] font-bold rounded-full grid place-items-center ring-2 ring-background shadow-sm">
                       {cartCount > 9 ? "9+" : cartCount}
                     </span>
                   )}
+                </div>
+                <span className={`text-[10px] font-bold uppercase tracking-widest transition-opacity ${active ? "opacity-100" : "opacity-60 group-hover:opacity-100"}`}>
+                  {label}
                 </span>
-                <span className="text-[10px] font-medium tracking-tight">{label}</span>
+                {active && (
+                  <motion.div
+                    layoutId="nav-active"
+                    className="absolute -bottom-1.5 size-1 bg-primary rounded-full"
+                  />
+                )}
               </Link>
             </li>
           );
