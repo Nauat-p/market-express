@@ -1,6 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Home, Search, ShoppingBag, Package, User } from "lucide-react";
+import { motion } from "framer-motion";
 import { cartQuery } from "@/lib/queries";
 import { useEffect, type ReactNode } from "react";
 
