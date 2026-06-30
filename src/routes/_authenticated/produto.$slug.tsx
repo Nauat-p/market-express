@@ -72,7 +72,7 @@ function ProductPage() {
 
   return (
     <>
-      <div className="pb-24">
+      <div className="pb-40">
         <header className="sticky top-0 z-20 glass px-4 pt-5 pb-3 flex items-center justify-between gap-3">
           <Link
             to="/home"
@@ -155,16 +155,10 @@ function ProductPage() {
               </p>
             </section>
           )}
-
-          <section className="bg-primary-soft rounded-2xl p-4">
-            <h3 className="text-xs font-bold text-primary mb-1">Entrega rápida</h3>
-            <p className="text-[11px] text-foreground/70">
-              Entrega em até 35 minutos no seu bairro · Frete grátis acima de R$ 50
-            </p>
-          </section>
         </motion.div>
 
-        <div className="fixed bottom-0 inset-x-0 z-40 glass border-t border-border safe-bottom px-5 pt-3 pb-3">
+        {/* Barra de ação fixada acima da BottomNav */}
+        <div className="fixed bottom-20 inset-x-0 z-40 glass border-t border-border safe-bottom px-5 pt-3 pb-3">
           <div className="max-w-md mx-auto">
             {inCart ? (
               <div className="flex items-center gap-3">
