@@ -108,6 +108,7 @@ function OrdersPage() {
   // Reflect filters in the URL so they survive refresh/back navigation.
   useEffect(() => {
     navigate({
+      to: "/pedidos", // <-- CORREÇÃO AQUI: Destino explícito adicionado
       search: {
         q: debouncedTerm || undefined,
         from: dateFrom || undefined,
