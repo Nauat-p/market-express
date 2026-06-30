@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { SignInRequired } from "@/components/sign-in-required";
+import { InstallPwaCard } from "@/components/install-pwa-card";
 
 export const Route = createFileRoute("/_authenticated/perfil")({
   ssr: false,
@@ -80,6 +81,8 @@ function ProfilePage() {
           <Stat label="Endereços" value={addresses.length} />
           <Stat label="Em rota" value={orders.filter((o) => o.status === "out_for_delivery").length} />
         </section>
+
+        <InstallPwaCard />
 
         <section className="space-y-2">
           <ProfileLink
