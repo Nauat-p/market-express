@@ -46,6 +46,7 @@ function ProductPage() {
   const inCart = cart.find((c) => c.product_id === product.id);
   const discount = calcDiscount(product.price, product.sale_price);
   const finalPrice = product.sale_price ?? product.price;
+  const outOfStock = product.stock <= 0;
 
   const isSaved =
     isFavorite(product.id) ||
@@ -131,7 +132,7 @@ function ProductPage() {
           )}
 
           <div className="flex items-baseline gap-3 mb-5">
-            <span className="text-3xl font-semibold text-foreground">
+            <span className="text-4xl font-bold text-foreground">
               {formatBRL(finalPrice)}
             </span>
             {discount > 0 && (
@@ -203,8 +204,12 @@ function ProductPage() {
               <button
                 type="button"
                 onClick={() => add.mutate({ product })}
-                disabled={add.isPending}
-                className="w-full bg-primary text-primary-foreground rounded-2xl py-4 text-sm font-semibold flex items-center justify-center gap-2 active:scale-[.98] transition-transform disabled:opacity-60"
+                disabled={add.isPending || outOfStock}
+                className={`w-full rounded-2xl py-4 text-sm font-semibold flex items-center justify-center gap-2 active:scale-[.98] transition-transform ${
+                  outOfStock
+                    ? "bg-muted text-muted-foreground cursor-not-allowed"
+                    : "bg-primary text-primary-foreground hover:bg-primary/90"
+                }`}
               >
                 <Plus className="size-4" strokeWidth={2.5} />
                 Adicionar ao carrinho
