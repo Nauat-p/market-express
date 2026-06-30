@@ -1,15 +1,14 @@
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Plus, Minus, Bookmark } from "lucide-react";
+import { Bookmark } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { cartQuery, type Product } from "@/lib/queries";
 import { formatBRL, calcDiscount } from "@/lib/format";
-import { useAddToCart, useUpdateCartQty } from "@/hooks/use-cart";
+import { useAddToCart } from "@/hooks/use-cart";
 import { SaveProductSheet } from "@/components/save-product-sheet";
 import { useFavorites } from "@/hooks/use-favorites";
 import { useShoppingLists } from "@/hooks/use-shopping-lists";
-import { toast } from "sonner";
 
 type Variant = "carousel" | "grid";
 
@@ -17,7 +16,6 @@ export function ProductCard({ product, variant = "grid" }: { product: Product; v
   const { data: cart = [] } = useQuery(cartQuery);
   const inCart = cart.find((c) => c.product_id === product.id);
   const add = useAddToCart();
-  const update = useUpdateCartQty();
   const { isFavorite } = useFavorites();
   const { lists } = useShoppingLists();
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -39,29 +37,17 @@ export function ProductCard({ product, variant = "grid" }: { product: Product; v
           variant === "carousel" ? "w-40 shrink-0" : "w-full"
         }`}
       >
-        {/* Save button */}
-        <button
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSheetOpen(true); }}
-          className={`absolute top-2 right-2 z-10 size-7 rounded-full grid place-items-center shadow-sm transition-all active:scale-90 ${
-            isSaved
-              ? "bg-primary text-primary-foreground"
-              : "bg-card/90 backdrop-blur-sm text-muted-foreground hover:text-primary"
-          }`}
-        >
-          <Bookmark className={`size-3.5 ${isSaved ? "fill-current" : ""}`} />
-        </button>
-
         <Link
           to="/produto/$slug"
           params={{ slug: product.slug }}
-          className="block relative aspect-square rounded-2xl overflow-hidden bg-muted/30 mb-2.5 group"
+          className="block relative aspect-square rounded-2xl overflow-hidden bg-muted/30 mb-2.5 group cursor-pointer"
         >
           {product.image_url ? (
             <img
               src={product.image_url}
               alt={product.name}
               loading="lazy"
-              className={`w-full h-full object-cover ${outOfStock ? "grayscale opacity-60" : ""}`}
+              className={`w-full h-full object-cover transition-transform group-hover:scale-105 ${outOfStock ? "grayscale opacity-60" : ""}`}
             />
           ) : (
             <div className="w-full h-full grid place-items-center text-3xl">📦</div>
@@ -96,19 +82,19 @@ export function ProductCard({ product, variant = "grid" }: { product: Product; v
               {product.brand}
             </p>
           )}
-          <p className="text-[13px] font-semibold text-foreground line-clamp-2 leading-snug mb-1 group-hover:text-primary transition-colors">
+          <p className="text-[13px] font-semibold text-foreground line-clamp-2 leading-snug mb-2 group-hover:text-primary transition-colors">
             {product.name}
           </p>
         </div>
 
-        <div className="mt-2 flex items-end justify-between gap-2">
+        <div className="mt-auto flex items-end justify-between gap-2">
           <div className="flex flex-col leading-tight">
             {discount > 0 && (
               <span className="text-[10px] text-muted-foreground/70 line-through">
                 {formatBRL(product.price)}
               </span>
             )}
-            <span className="text-base font-bold text-foreground tracking-tight">
+            <span className="text-lg font-bold text-foreground tracking-tight">
               {formatBRL(finalPrice)}
               {product.unit && (
                 <span className="text-[11px] font-medium text-muted-foreground"> /{product.unit}</span>
@@ -116,42 +102,10 @@ export function ProductCard({ product, variant = "grid" }: { product: Product; v
             </span>
           </div>
 
-          {inCart ? (
-            <div className="flex items-center gap-1 bg-primary-soft rounded-xl p-0.5 ring-1 ring-primary/10">
-              <button
-                type="button"
-                aria-label="Diminuir"
-                onClick={() => update.mutate({ id: inCart.id, quantity: inCart.quantity - 1 })}
-                className="size-7 rounded-lg grid place-items-center text-primary hover:bg-primary/10 active:scale-90 transition-all"
-              >
-                <Minus className="size-3" strokeWidth={3} />
-              </button>
-              <span className="text-xs font-bold text-primary min-w-[2ch] text-center">
-                {inCart.quantity}
-              </span>
-              <button
-                type="button"
-                aria-label="Aumentar"
-                onClick={() => update.mutate({ id: inCart.id, quantity: inCart.quantity + 1 })}
-                className="size-7 rounded-lg grid place-items-center text-primary hover:bg-primary/10 active:scale-90 transition-all"
-              >
-                <Plus className="size-3" strokeWidth={3} />
-              </button>
+          {isSaved && (
+            <div className="size-7 rounded-full grid place-items-center bg-primary/10 text-primary">
+              <Bookmark className="size-3.5 fill-current" />
             </div>
-          ) : (
-            <button
-              type="button"
-              aria-label="Adicionar ao carrinho"
-              onClick={() => add.mutate({ product })}
-              disabled={add.isPending || outOfStock}
-              className={`size-8 rounded-full grid place-items-center shadow-sm active:scale-90 transition-all ${
-                outOfStock
-                  ? "bg-muted text-muted-foreground cursor-not-allowed"
-                  : "bg-primary text-primary-foreground hover:shadow-md hover:bg-primary/90"
-              }`}
-            >
-              <Plus className="size-4" strokeWidth={3} />
-            </button>
           )}
         </div>
       </motion.div>
