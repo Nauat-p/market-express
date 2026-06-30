@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { motion } from "framer-motion";
-import { Clock, Truck, ChevronRight } from "lucide-react";
 import { AppHeader } from "@/components/app-header";
 import { CategoriesStrip } from "@/components/categories-strip";
 import { ProductCard, ProductCardSkeleton } from "@/components/product-card";
@@ -32,7 +31,6 @@ function HomePage() {
         <Suspense fallback={<CarouselSkeleton />}>
           <CategoriesStrip />
         </Suspense>
-        <DeliveryBar />
         <Suspense fallback={<CarouselSkeleton />}>
           <ProductCarousel title="Ofertas do dia" query={offersQuery} viewAll="oferta" />
         </Suspense>
@@ -81,27 +79,6 @@ function PromoBanner() {
           </Link>
         </div>
       </motion.div>
-    </section>
-  );
-}
-
-function DeliveryBar() {
-  return (
-    <section className="px-5">
-      <div className="bg-card ring-1 ring-border shadow-card rounded-2xl p-3.5 flex items-center gap-3.5 transition-all active:scale-[0.99]">
-        <div className="size-11 rounded-full bg-primary/10 text-primary grid place-items-center shrink-0 shadow-inner">
-          <Truck className="size-5.5" strokeWidth={2.5} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-bold text-foreground tracking-tight">Mercado mais próximo</p>
-          <p className="text-[11px] text-muted-foreground flex items-center gap-1.5 mt-0.5">
-            <Clock className="size-3 text-primary/70" /> 25-35 min · <span className="text-primary font-semibold">Frete grátis</span>
-          </p>
-        </div>
-        <div className="size-8 rounded-full bg-muted/50 grid place-items-center">
-          <ChevronRight className="size-4 text-muted-foreground" />
-        </div>
-      </div>
     </section>
   );
 }
