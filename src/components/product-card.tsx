@@ -40,7 +40,7 @@ export function ProductCard({ product, variant = "grid" }: { product: Product; v
         <Link
           to="/produto/$slug"
           params={{ slug: product.slug }}
-          className="block relative aspect-square rounded-2xl overflow-hidden bg-muted/30 mb-2.5 group cursor-pointer"
+          className="block relative aspect-[4/3] rounded-2xl overflow-hidden bg-muted/30 mb-2.5 group cursor-pointer"
         >
           {product.image_url ? (
             <img
@@ -126,7 +126,7 @@ export function ProductCardSkeleton({ variant = "grid" }: { variant?: Variant })
         variant === "carousel" ? "w-40 shrink-0" : "w-full"
       }`}
     >
-      <div className="aspect-square rounded-2xl bg-muted animate-pulse mb-3" />
+      <div className="aspect-[4/3] rounded-2xl bg-muted animate-pulse mb-3" />
       <div className="h-3 w-2/3 bg-muted rounded mb-2 animate-pulse" />
       <div className="h-4 w-1/2 bg-muted rounded animate-pulse" />
     </div>
