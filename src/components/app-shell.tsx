@@ -27,8 +27,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   // Aumentamos o padding inferior em rotas com botões fixos para que o conteúdo não fique por baixo da BottomNav
   const hasExtraPadding = 
     pathname.startsWith("/produto/") || 
+    pathname.startsWith("/lista/") ||
     pathname === "/carrinho" || 
-    pathname === "/checkout";
+    pathname === "/checkout" ||
+    pathname === "/favoritos";
 
   useEffect(() => {
     const handler = () =>

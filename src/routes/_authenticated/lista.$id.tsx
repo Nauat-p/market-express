@@ -172,7 +172,7 @@ function ListDetailPage() {
       </main>
 
       {list.items.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 glass border-t border-border/40">
+        <div className="fixed bottom-20 left-0 right-0 z-40 p-4 glass border-t border-border/40">
           <button
             onClick={handleAddAllToCart}
             className="w-full bg-primary text-primary-foreground rounded-2xl py-3.5 font-semibold flex items-center justify-center gap-2"

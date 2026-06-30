@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { cartQuery, type Product } from "@/lib/queries";
+import { cartQuery, type CartItem, type Product } from "@/lib/queries";
 import { toast } from "sonner";
 import {
   addLocal,
@@ -68,13 +68,47 @@ export function useAddToCart() {
         throw error;
       }
     },
+    // Atualização otimista: o item aparece no carrinho imediatamente,
+    // sem esperar a resposta do servidor. Isso elimina o atraso percebido
+    // ao clicar para adicionar um produto.
+    onMutate: async ({ product, quantity = 1 }) => {
+      await qc.cancelQueries({ queryKey: cartQuery.queryKey });
+      const previous = qc.getQueryData<CartItem[]>(cartQuery.queryKey);
+
+      qc.setQueryData<CartItem[]>(cartQuery.queryKey, (old = []) => {
+        const existing = old.find((c) => c.product_id === product.id);
+        if (existing) {
+          return old.map((c) =>
+            c.product_id === product.id
+              ? { ...c, quantity: c.quantity + quantity }
+              : c
+          );
+        }
+        return [
+          ...old,
+          {
+            id: `optimistic-${product.id}`,
+            product_id: product.id,
+            quantity,
+            product,
+          },
+        ];
+      });
+
+      return { previous };
+    },
     onSuccess: (_, vars) => {
-      qc.invalidateQueries({ queryKey: cartQuery.queryKey });
       toast.success(`${vars.product.name} adicionado ao carrinho`);
     },
-    onError: (e: Error) => {
+    onError: (e: Error, _vars, context) => {
       console.error("Erro ao adicionar ao carrinho:", e);
+      if (context?.previous) {
+        qc.setQueryData(cartQuery.queryKey, context.previous);
+      }
       toast.error("Não foi possível adicionar o item. Tente novamente.");
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: cartQuery.queryKey });
     },
   });
 }
@@ -111,11 +145,29 @@ export function useUpdateCartQty() {
         if (error) throw error;
       }
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: cartQuery.queryKey }),
-    onError: (e: Error) => {
+    // Atualização otimista: o +/- responde na hora, sem esperar o
+    // round-trip de rede, evitando o atraso ao alterar a quantidade.
+    onMutate: async ({ id, quantity }) => {
+      await qc.cancelQueries({ queryKey: cartQuery.queryKey });
+      const previous = qc.getQueryData<CartItem[]>(cartQuery.queryKey);
+
+      qc.setQueryData<CartItem[]>(cartQuery.queryKey, (old = []) => {
+        if (quantity <= 0) {
+          return old.filter((c) => c.id !== id);
+        }
+        return old.map((c) => (c.id === id ? { ...c, quantity } : c));
+      });
+
+      return { previous };
+    },
+    onError: (e: Error, _vars, context) => {
       console.error("Erro ao atualizar quantidade:", e);
+      if (context?.previous) {
+        qc.setQueryData(cartQuery.queryKey, context.previous);
+      }
       toast.error("Erro ao atualizar o carrinho.");
-    }
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: cartQuery.queryKey }),
   });
 }
 

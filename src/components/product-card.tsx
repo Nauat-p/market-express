@@ -37,11 +37,15 @@ export function ProductCard({ product, variant = "grid" }: { product: Product; v
           variant === "carousel" ? "w-40 shrink-0" : "w-full"
         }`}
       >
+        {/* O Link envolve todo o cartão (imagem, nome e preço) para que o
+            clique funcione em qualquer parte dele, não só na imagem. */}
         <Link
           to="/produto/$slug"
           params={{ slug: product.slug }}
-          className="block relative aspect-[4/3] rounded-2xl overflow-hidden bg-muted/30 mb-2.5 group cursor-pointer"
-        >
+          className="absolute inset-0 z-10 rounded-3xl"
+          aria-label={product.name}
+        />
+        <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-muted/30 mb-2.5 group pointer-events-none">
           {product.image_url ? (
             <img
               src={product.image_url}
@@ -74,9 +78,9 @@ export function ProductCard({ product, variant = "grid" }: { product: Product; v
               Últimas {product.stock} unid.
             </span>
           )}
-        </Link>
+        </div>
 
-        <div className="flex-1 min-w-0 px-0.5">
+        <div className="relative flex-1 min-w-0 px-0.5">
           {product.brand && (
             <p className="text-[9px] uppercase tracking-widest text-muted-foreground/80 font-bold truncate mb-0.5">
               {product.brand}
@@ -87,7 +91,7 @@ export function ProductCard({ product, variant = "grid" }: { product: Product; v
           </p>
         </div>
 
-        <div className="mt-auto flex items-end justify-between gap-2">
+        <div className="relative mt-auto flex items-end justify-between gap-2">
           <div className="flex flex-col leading-tight">
             {discount > 0 && (
               <span className="text-[10px] text-muted-foreground/70 line-through">

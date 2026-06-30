@@ -80,7 +80,7 @@ function FavoritesPage() {
       </main>
 
       {favorites.length > 0 && (
-        <div className="fixed bottom-0 inset-x-0 z-40 glass border-t border-border/40 px-5 pt-3 pb-3">
+        <div className="fixed bottom-20 inset-x-0 z-40 glass border-t border-border/40 px-5 pt-3 pb-3">
           <button
             onClick={handleAddAllToCart}
             disabled={addToCart.isPending}

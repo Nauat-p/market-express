@@ -176,7 +176,7 @@ function CartPage() {
             </section>
           </main>
 
-          <div className="fixed bottom-0 inset-x-0 z-40 glass border-t border-border safe-bottom px-5 pt-3 pb-3">
+          <div className="fixed bottom-20 inset-x-0 z-40 glass border-t border-border safe-bottom px-5 pt-3 pb-3">
             <div className="max-w-md mx-auto">
               <Link
                 to="/checkout"
