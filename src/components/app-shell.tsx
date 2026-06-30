@@ -22,6 +22,14 @@ const items: NavItem[] = [
 
 export function AppShell({ children }: { children: ReactNode }) {
   const qc = useQueryClient();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  
+  // Aumentamos o padding inferior em rotas com botões fixos para que o conteúdo não fique por baixo da BottomNav
+  const hasExtraPadding = 
+    pathname.startsWith("/produto/") || 
+    pathname === "/carrinho" || 
+    pathname === "/checkout";
+
   useEffect(() => {
     const handler = () =>
       qc.invalidateQueries({ queryKey: cartQuery.queryKey });
@@ -30,7 +38,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [qc]);
 
   return (
-    <div className="min-h-dvh bg-background pb-24">
+    <div className={`min-h-dvh bg-background ${hasExtraPadding ? "pb-44" : "pb-24"}`}>
       {children}
       <BottomNav />
     </div>
@@ -43,7 +51,7 @@ function BottomNav() {
   const cartCount = cart.reduce((sum, i) => sum + i.quantity, 0);
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-40 bg-zinc-950 border-t border-zinc-800 safe-bottom px-2 pt-1.5">
+    <nav className="fixed bottom-0 inset-x-0 z-50 bg-zinc-950 border-t border-zinc-800 safe-bottom px-2 pt-1.5">
       <ul className="max-w-md mx-auto flex items-center justify-around">
         {items.map(({ to, label, icon: Icon, badge }) => {
           const active = pathname === to || (to === "/home" && pathname === "/");
