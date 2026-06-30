@@ -15,7 +15,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedPerfilEditRouteImport } from './routes/_authenticated/perfil-edit'
 import { Route as AuthenticatedPerfilRouteImport } from './routes/_authenticated/perfil'
 import { Route as AuthenticatedPedidosRouteImport } from './routes/_authenticated/pedidos'
+import { Route as AuthenticatedListasRouteImport } from './routes/_authenticated/listas'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
+import { Route as AuthenticatedFavoritosRouteImport } from './routes/_authenticated/favoritos'
 import { Route as AuthenticatedEnderecosRouteImport } from './routes/_authenticated/enderecos'
 import { Route as AuthenticatedCheckoutRouteImport } from './routes/_authenticated/checkout'
 import { Route as AuthenticatedCarrinhoRouteImport } from './routes/_authenticated/carrinho'
@@ -54,9 +56,19 @@ const AuthenticatedPedidosRoute = AuthenticatedPedidosRouteImport.update({
   path: '/pedidos',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedListasRoute = AuthenticatedListasRouteImport.update({
+  id: '/listas',
+  path: '/listas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
   id: '/home',
   path: '/home',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedFavoritosRoute = AuthenticatedFavoritosRouteImport.update({
+  id: '/favoritos',
+  path: '/favoritos',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedEnderecosRoute = AuthenticatedEnderecosRouteImport.update({
@@ -109,7 +121,9 @@ export interface FileRoutesByFullPath {
   '/carrinho': typeof AuthenticatedCarrinhoRoute
   '/checkout': typeof AuthenticatedCheckoutRoute
   '/enderecos': typeof AuthenticatedEnderecosRoute
+  '/favoritos': typeof AuthenticatedFavoritosRoute
   '/home': typeof AuthenticatedHomeRoute
+  '/listas': typeof AuthenticatedListasRoute
   '/pedidos': typeof AuthenticatedPedidosRoute
   '/perfil': typeof AuthenticatedPerfilRoute
   '/perfil-edit': typeof AuthenticatedPerfilEditRoute
@@ -125,7 +139,9 @@ export interface FileRoutesByTo {
   '/carrinho': typeof AuthenticatedCarrinhoRoute
   '/checkout': typeof AuthenticatedCheckoutRoute
   '/enderecos': typeof AuthenticatedEnderecosRoute
+  '/favoritos': typeof AuthenticatedFavoritosRoute
   '/home': typeof AuthenticatedHomeRoute
+  '/listas': typeof AuthenticatedListasRoute
   '/pedidos': typeof AuthenticatedPedidosRoute
   '/perfil': typeof AuthenticatedPerfilRoute
   '/perfil-edit': typeof AuthenticatedPerfilEditRoute
@@ -143,7 +159,9 @@ export interface FileRoutesById {
   '/_authenticated/carrinho': typeof AuthenticatedCarrinhoRoute
   '/_authenticated/checkout': typeof AuthenticatedCheckoutRoute
   '/_authenticated/enderecos': typeof AuthenticatedEnderecosRoute
+  '/_authenticated/favoritos': typeof AuthenticatedFavoritosRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
+  '/_authenticated/listas': typeof AuthenticatedListasRoute
   '/_authenticated/pedidos': typeof AuthenticatedPedidosRoute
   '/_authenticated/perfil': typeof AuthenticatedPerfilRoute
   '/_authenticated/perfil-edit': typeof AuthenticatedPerfilEditRoute
@@ -161,7 +179,9 @@ export interface FileRouteTypes {
     | '/carrinho'
     | '/checkout'
     | '/enderecos'
+    | '/favoritos'
     | '/home'
+    | '/listas'
     | '/pedidos'
     | '/perfil'
     | '/perfil-edit'
@@ -177,7 +197,9 @@ export interface FileRouteTypes {
     | '/carrinho'
     | '/checkout'
     | '/enderecos'
+    | '/favoritos'
     | '/home'
+    | '/listas'
     | '/pedidos'
     | '/perfil'
     | '/perfil-edit'
@@ -194,7 +216,9 @@ export interface FileRouteTypes {
     | '/_authenticated/carrinho'
     | '/_authenticated/checkout'
     | '/_authenticated/enderecos'
+    | '/_authenticated/favoritos'
     | '/_authenticated/home'
+    | '/_authenticated/listas'
     | '/_authenticated/pedidos'
     | '/_authenticated/perfil'
     | '/_authenticated/perfil-edit'
@@ -254,11 +278,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPedidosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/listas': {
+      id: '/_authenticated/listas'
+      path: '/listas'
+      fullPath: '/listas'
+      preLoaderRoute: typeof AuthenticatedListasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/home': {
       id: '/_authenticated/home'
       path: '/home'
       fullPath: '/home'
       preLoaderRoute: typeof AuthenticatedHomeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/favoritos': {
+      id: '/_authenticated/favoritos'
+      path: '/favoritos'
+      fullPath: '/favoritos'
+      preLoaderRoute: typeof AuthenticatedFavoritosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/enderecos': {
@@ -325,7 +363,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCarrinhoRoute: typeof AuthenticatedCarrinhoRoute
   AuthenticatedCheckoutRoute: typeof AuthenticatedCheckoutRoute
   AuthenticatedEnderecosRoute: typeof AuthenticatedEnderecosRoute
+  AuthenticatedFavoritosRoute: typeof AuthenticatedFavoritosRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
+  AuthenticatedListasRoute: typeof AuthenticatedListasRoute
   AuthenticatedPedidosRoute: typeof AuthenticatedPedidosRoute
   AuthenticatedPerfilRoute: typeof AuthenticatedPerfilRoute
   AuthenticatedPerfilEditRoute: typeof AuthenticatedPerfilEditRoute
@@ -340,7 +380,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCarrinhoRoute: AuthenticatedCarrinhoRoute,
   AuthenticatedCheckoutRoute: AuthenticatedCheckoutRoute,
   AuthenticatedEnderecosRoute: AuthenticatedEnderecosRoute,
+  AuthenticatedFavoritosRoute: AuthenticatedFavoritosRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
+  AuthenticatedListasRoute: AuthenticatedListasRoute,
   AuthenticatedPedidosRoute: AuthenticatedPedidosRoute,
   AuthenticatedPerfilRoute: AuthenticatedPerfilRoute,
   AuthenticatedPerfilEditRoute: AuthenticatedPerfilEditRoute,
@@ -361,3 +403,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
